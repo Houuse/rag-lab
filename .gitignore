@@ -1,0 +1,21 @@
+# Nested repositories, cloned separately — not submodules.
+#   financebench  https://github.com/patronus-ai/financebench   (corpus + questions)
+#   AI-Labs       the earlier C# scaffolding
+/financebench/
+/AI-Labs/
+
+# Conversion and embedding output. Regenerable, and large: a 160-page filing
+# produces a 10-30 MB JSON, parts/ is about as much again, and the whole cache
+# is over a gigabyte.
+ingest/cache/
+
+# Virtual environment, 5.4 GB.
+ingest/.venv/
+
+# Run logs
+ingest/*.log
+ingest/*.out
+
+__pycache__/
+*.pyc
+.DS_Store
