@@ -1,0 +1,26 @@
+# The embed-only pass, for running `embed_only.py` on a machine with a GPU.
+# Not a manifest for the whole pipeline — this is the subset `load.py` touches
+# before it reaches the database. psycopg is absent on purpose: `write()`
+# imports it lazily, and the embed pass never gets that far. So is `docling`
+# itself; only `docling_core` is used, so there are no layout or TableFormer
+# models to download.
+#
+# These are exact pins, not minimums, and the reason is the embedding cache.
+# Its key is an md5 of the chunk and fact strings, and chunk boundaries come
+# out of docling_core's HybridChunker and the HuggingFace tokenizer. A
+# different version of either produces different text, a different key, and a
+# cache that silently misses — the GPU run completes, `load.py` finds nothing,
+# and re-embeds everything on CPU without an error. These are the versions
+# that produced the documents already in Postgres.
+docling-core==2.92.0
+transformers==5.15.1
+tokenizers==0.22.2
+sentence-transformers==6.0.0
+numpy==2.5.2
+einops==0.8.2
+
+# torch arrives as a dependency of sentence-transformers. Do not pin it here:
+# gpu-embed.sh checks whether the installed wheel can actually see the GPU and
+# only reinstalls from a CUDA index when it cannot, exactly as
+# docling-extract/setup.sh does. Forcing an index can downgrade a working
+# install.
