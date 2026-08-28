@@ -64,6 +64,7 @@ there is no `python` on PATH and the dependencies live only in `ingest/.venv`.
 | Load into Postgres | `.venv/bin/python load.py <stem>` |
 | Search | `.venv/bin/python search.py "question"`, or `--facts` for facts |
 | Many documents | `.venv/bin/python batch.py --corpus 150 --workers 4 --threads 2` |
+| Score retrieval | `.venv/bin/python eval.py` — all 150 questions, both conditions, under a minute. `--limit 0` classifies only |
 
 `RAGLAB_DSN` overrides the connection string. It defaults to
 `postgresql://raglab:raglab@localhost:5433/raglab` — port 5433, not 5432,

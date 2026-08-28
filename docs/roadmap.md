@@ -53,11 +53,46 @@ and the refusal instruction. Groundedness is made possible or impossible here.
 Answer with citations, refuse when the context does not support an answer.
 Arithmetic happens in code, not in the model.
 
-## evaluate
+## evaluate — harness built, baseline recorded
 
-The 150 FinanceBench questions as a regression suite. Retrieval is scored
-against `evidence_text` character spans, not page numbers, so the metric is
-chunker-agnostic; report recall at a fixed context budget so larger chunks
-cannot win by size alone. Numeric answers are checked exactly. Keep
-per-question results, not just aggregates: at n=150 a few points of difference
-is inside the noise.
+`ingest/eval.py` scores all 150 questions in both conditions and writes
+`ingest/eval-runs/<timestamp>/{rows.csv,summary.md}`. Under a minute for a full
+run. Implements `docs/eval-plan.md`; the group split is derived from the data
+and asserted against the documented 70/56/24, so a change to number parsing
+fails loudly instead of quietly reshaping every metric.
+
+Baseline, 2026-08-28, 366 documents:
+
+| group | condition | headline |
+|---|---|---|
+| direct (70) | oracle | R@1 0.086, R@20 0.286, MRR 0.121 |
+| direct (70) | corpus | R@1 0.029, R@20 0.157, MRR 0.063 |
+| computed (56) | oracle | any@20 0.857, mean coverage 0.103 |
+| computed (56) | corpus | any@20 0.661, mean coverage 0.050 |
+| narrative (24) | oracle | hit@20 0.500, median overlap 0.230 |
+| narrative (24) | corpus | hit@20 0.417, median overlap 0.058 |
+
+Oracle beats corpus on every metric. That gap is the cost of entity and period
+resolution and is the number the metadata pre-filter has to move.
+
+Two defects in the metrics, found by running them, reported in every
+`summary.md` rather than left to be rediscovered:
+
+- **The direct group is mostly not a direct lookup.** A question joins it when
+  a number in its answer also appears in the evidence, but 62 of 70 answers are
+  sentences that merely contain one — "The consumer segment shrunk by 0.9%
+  organically" is scored by hunting for the value 0.9, and one answer yields
+  1.5 from a bond coupon. The 8 answers that are bare figures hit 5/8 at k=20,
+  against 15/62 for the rest. The headline is dominated by questions
+  value-matching cannot measure.
+- **`all@k` for computed is unreachable by arithmetic.** `evidence_text` holds
+  a median of 88 distinct numbers and 49 of 56 questions need more than k=20,
+  so 0.000 is the definition biting rather than a result.
+
+Fixing either means revising `eval-plan.md`, so the baseline above implements
+it as written and flags the problem instead of quietly redefining the metric.
+
+Also surfaced: 19 of 366 documents produced zero facts, two of them documents
+the questions reference (`AMCOR_2022_8K_dated-2022-07-01`,
+`FOOTLOCKER_2022_8K_dated_2022-08-19`). A numeric question about those cannot
+be answered through the fact path at all.

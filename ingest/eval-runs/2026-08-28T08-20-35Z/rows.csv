@@ -1,0 +1,301 @@
+id,group,condition,company,oracle_doc,n_retrieved,answer_words,rank,score,expected,found,matched,page,found_doc,best_overlap,n_inputs,cov@1,cov@5,cov@10,cov@20
+financebench_id_03029,direct,oracle,3M,3M_2018_10K,20,0,2,0.8038,1577.0,1577.0,"3M · 3M Company and Subsidiaries Consolidated Statement of Cash Flow s Years ended December 31 · Purchases of property, plant and equipment (PP&E) · 2018 · (1,577) millions",60,3M_2018_10K,,,,,,
+financebench_id_03029,direct,corpus,3M,3M_2018_10K,20,0,4,0.8049,1577.0,1577.0,"3M · 3M Company and Subsidiaries Consolidated Statement of Cash Flows Years ended December 31 · Purchases of property, plant and equipment (PP&E) · 2018 · (1,577) millions",61,3M_2020_10K,,,,,,
+financebench_id_04672,computed,oracle,3M,3M_2018_10K,20,0,,,,,,,,,80,0.0,0.0,0.0,0.0125
+financebench_id_04672,computed,corpus,3M,3M_2018_10K,20,0,,,,,,,,,80,0.0125,0.025,0.0375,0.0875
+financebench_id_00499,computed,oracle,3M,3M_2022_10K,20,25,,,,,,,,,89,0.011235955056179775,0.033707865168539325,0.0449438202247191,0.056179775280898875
+financebench_id_00499,computed,corpus,3M,3M_2022_10K,20,25,,,,,,,,,89,0.011235955056179775,0.02247191011235955,0.0449438202247191,0.056179775280898875
+financebench_id_01226,direct,oracle,3M,3M_2022_10K,20,33,1,0.7985,1.7,1.7,3M · Operating Expenses · Operating income margin · Change · (1.7)%,27,3M_2022_10K,,,,,,
+financebench_id_01226,direct,corpus,3M,3M_2022_10K,20,33,5,0.7985,1.7,1.7,3M · Operating Expenses · Operating income margin · Change · (1.7)%,27,3M_2022_10K,,,,,,
+financebench_id_01865,direct,oracle,3M,3M_2022_10K,20,5,,,0.9,,,,,,,,,,
+financebench_id_01865,direct,corpus,3M,3M_2022_10K,20,5,,,0.9,,,,,,,,,,
+financebench_id_00807,direct,oracle,3M,3M_2023Q2_10Q,20,14,,,0.96,,,,,,,,,,
+financebench_id_00807,direct,corpus,3M,3M_2023Q2_10Q,20,14,,,0.96,,,,,,,,,,
+financebench_id_00941,direct,oracle,3M,3M_2023Q2_10Q,20,29,,,1.5,,,,,,,,,,
+financebench_id_00941,direct,corpus,3M,3M_2023Q2_10Q,20,29,4,0.7685,1.5,30.0,"3M · Marketable Securities · Non-current marketable securities · December 31, 2020 · $ 30 millions",87,3M_2020_10K,,,,,,
+financebench_id_01858,direct,oracle,3M,3M_2023Q2_10Q,20,20,,,3.0,,,,,,,,,,
+financebench_id_01858,direct,corpus,3M,3M_2023Q2_10Q,20,20,,,3.0,,,,,,,,,,
+financebench_id_02987,computed,oracle,Activision Blizzard,ACTIVISIONBLIZZARD_2019_10K,20,0,,,,,,,,,126,0.007936507936507936,0.03968253968253968,0.07936507936507936,0.14285714285714285
+financebench_id_02987,computed,corpus,Activision Blizzard,ACTIVISIONBLIZZARD_2019_10K,20,0,,,,,,,,,126,0.007936507936507936,0.031746031746031744,0.06349206349206349,0.12698412698412698
+financebench_id_07966,computed,oracle,Activision Blizzard,ACTIVISIONBLIZZARD_2019_10K,20,0,,,,,,,,,143,0.006993006993006993,0.03496503496503497,0.06993006993006994,0.11188811188811189
+financebench_id_07966,computed,corpus,Activision Blizzard,ACTIVISIONBLIZZARD_2019_10K,20,0,,,,,,,,,143,0.0,0.0,0.013986013986013986,0.03496503496503497
+financebench_id_04735,computed,oracle,Adobe,ADOBE_2015_10K,20,0,,,,,,,,,191,0.0,0.0,0.0,0.005235602094240838
+financebench_id_04735,computed,corpus,Adobe,ADOBE_2015_10K,20,0,,,,,,,,,191,0.0,0.0,0.0,0.0
+financebench_id_07507,computed,oracle,Adobe,ADOBE_2016_10K,20,0,,,,,,,,,88,0.0,0.0,0.0,0.0
+financebench_id_07507,computed,corpus,Adobe,ADOBE_2016_10K,20,0,,,,,,,,,88,0.0,0.0,0.0,0.0
+financebench_id_03856,computed,oracle,Adobe,ADOBE_2017_10K,20,0,,,,,,,,,171,0.0,0.0,0.0,0.0
+financebench_id_03856,computed,corpus,Adobe,ADOBE_2017_10K,20,0,,,,,,,,,171,0.0,0.0,0.0,0.0
+financebench_id_00438,direct,oracle,Adobe,ADOBE_2022_10K,20,10,,,2.2,,,,,,,,,,
+financebench_id_00438,direct,corpus,Adobe,ADOBE_2022_10K,20,10,,,2.2,,,,,,,,,,
+financebench_id_00591,direct,oracle,Adobe,ADOBE_2022_10K,20,14,,,13.0,,,,,,,,,,
+financebench_id_00591,direct,corpus,Adobe,ADOBE_2022_10K,20,14,,,13.0,,,,,,,,,,
+financebench_id_01319,direct,oracle,AES Corporation,AES_2022_10K,20,0,,,0.0,,,,,,,,,,
+financebench_id_01319,direct,corpus,AES Corporation,AES_2022_10K,20,0,,,0.0,,,,,,,,,,
+financebench_id_00540,direct,oracle,AES Corporation,AES_2022_10K,20,5,,,9.5,,,,,,,,,,
+financebench_id_00540,direct,corpus,AES Corporation,AES_2022_10K,20,5,,,9.5,,,,,,,,,,
+financebench_id_10420,computed,oracle,AES Corporation,AES_2022_10K,20,0,,,,,,,,,197,0.0,0.005076142131979695,0.02030456852791878,0.03553299492385787
+financebench_id_10420,computed,corpus,AES Corporation,AES_2022_10K,20,0,,,,,,,,,197,0.0,0.0,0.005076142131979695,0.01015228426395939
+financebench_id_06655,computed,oracle,Amazon,AMAZON_2017_10K,20,0,,,,,,,,,118,0.0,0.03389830508474576,0.059322033898305086,0.11864406779661017
+financebench_id_06655,computed,corpus,Amazon,AMAZON_2017_10K,20,0,,,,,,,,,118,0.0,0.0,0.0423728813559322,0.0423728813559322
+financebench_id_08135,computed,oracle,Amazon,AMAZON_2017_10K,20,0,,,,,,,,,73,0.0,0.0273972602739726,0.0684931506849315,0.0958904109589041
+financebench_id_08135,computed,corpus,Amazon,AMAZON_2017_10K,20,0,,,,,,,,,73,0.0,0.0,0.0,0.0821917808219178
+financebench_id_08286,direct,oracle,Amazon,AMAZON_2019_10K,20,0,,,11588.0,,,,,,,,,,
+financebench_id_08286,direct,corpus,Amazon,AMAZON_2019_10K,20,0,,,11588.0,,,,,,,,,,
+financebench_id_03882,computed,oracle,Amcor,AMCOR_2020_10K,20,0,,,,,,,,,83,0.0,0.0,0.0,0.024096385542168676
+financebench_id_03882,computed,corpus,Amcor,AMCOR_2020_10K,20,0,,,,,,,,,83,0.0,0.0,0.0,0.0
+financebench_id_01935,direct,oracle,Amcor,AMCOR_2022_8K_dated-2022-07-01,0,47,,,2026.0,,,,,,,,,,
+financebench_id_01935,direct,corpus,Amcor,AMCOR_2022_8K_dated-2022-07-01,20,47,,,2026.0,,,,,,,,,,
+financebench_id_00799,direct,oracle,Amcor,AMCOR_2023_10K,20,12,19,0.7519,0.67,2023.0,"AMCOR · The Company's business is organized and presented in the two reportable segments outlined below · ($ in millions) · Years ended June 30, · 2023 millions",101,AMCOR_2023_10K,,,,,,
+financebench_id_00799,direct,corpus,Amcor,AMCOR_2023_10K,20,12,,,0.67,,,,,,,,,,
+financebench_id_01079,direct,oracle,Amcor,AMCOR_2023_10K,20,35,6,0.7523,100.0,2023.0,"AMCOR · Capital expenditures for the acquisition of long-lived assets by reportable segment were · ($ in millions) · Years ended June 30, · 2023 millions",102,AMCOR_2023_10K,,,,,,
+financebench_id_01079,direct,corpus,Amcor,AMCOR_2023_10K,20,35,,,100.0,,,,,,,,,,
+financebench_id_01148,narrative,oracle,Amcor,AMCOR_2023_10K,20,9,2,,,,,5,AMCOR_2023_10K,1.0,,,,,
+financebench_id_01148,narrative,corpus,Amcor,AMCOR_2023_10K,20,9,5,,,,,5,AMCOR_2023_10K,1.0,,,,,
+financebench_id_00684,computed,oracle,Amcor,AMCOR_2023_10K,20,9,,,,,,,,,13,0.0,0.15384615384615385,0.3076923076923077,0.38461538461538464
+financebench_id_00684,computed,corpus,Amcor,AMCOR_2023_10K,20,9,,,,,,,,,13,0.0,0.0,0.0,0.0
+financebench_id_01936,computed,oracle,Amcor,AMCOR_2023Q2_10Q,20,7,,,,,,,,,15,0.06666666666666667,0.3333333333333333,0.5333333333333333,0.8666666666666667
+financebench_id_01936,computed,corpus,Amcor,AMCOR_2023Q2_10Q,20,7,,,,,,,,,15,0.06666666666666667,0.3333333333333333,0.4666666666666667,0.5333333333333333
+financebench_id_01928,direct,oracle,Amcor,AMCOR_2023Q4_EARNINGS,20,4,1,0.8356,2018.0,2018.0,"AMCOR · Reconciliation of Non-GAAP Measures · Adjusted EBITDA · Twelve Months Ended June 30, 2023 · 2,018",12,AMCOR_2023Q4_EARNINGS,,,,,,
+financebench_id_01928,direct,corpus,Amcor,AMCOR_2023Q4_EARNINGS,20,4,1,0.8356,2018.0,2018.0,"AMCOR · Reconciliation of Non-GAAP Measures · Adjusted EBITDA · Twelve Months Ended June 30, 2023 · 2,018",12,AMCOR_2023Q4_EARNINGS,,,,,,
+financebench_id_01930,direct,oracle,Amcor,AMCOR_2023Q4_EARNINGS,20,5,,,2022.0,,,,,,,,,,
+financebench_id_01930,direct,corpus,Amcor,AMCOR_2023Q4_EARNINGS,20,5,,,2022.0,,,,,,,,,,
+financebench_id_03069,computed,oracle,AMD,AMD_2015_10K,20,0,,,,,,,,,113,0.008849557522123894,0.008849557522123894,0.02654867256637168,0.061946902654867256
+financebench_id_03069,computed,corpus,AMD,AMD_2015_10K,20,0,,,,,,,,,113,0.008849557522123894,0.017699115044247787,0.02654867256637168,0.02654867256637168
+financebench_id_00222,computed,oracle,AMD,AMD_2022_10K,20,21,,,,,,,,,69,0.0,0.0,0.0,0.028985507246376812
+financebench_id_00222,computed,corpus,AMD,AMD_2022_10K,20,21,,,,,,,,,69,0.0,0.0,0.0,0.014492753623188406
+financebench_id_00995,narrative,oracle,AMD,AMD_2022_10K,20,66,10,,,,,4,AMD_2022_10K,0.9886,,,,,
+financebench_id_00995,narrative,corpus,AMD,AMD_2022_10K,20,66,7,,,,,11,AMD_2022_annualreport,0.4091,,,,,
+financebench_id_01198,direct,oracle,AMD,AMD_2022_10K,20,20,,,2022.0,,,,,,,,,,
+financebench_id_01198,direct,corpus,AMD,AMD_2022_10K,20,20,,,2022.0,,,,,,,,,,
+financebench_id_00917,narrative,oracle,AMD,AMD_2022_10K,20,16,3,,,,,43,AMD_2022_10K,1.0,,,,,
+financebench_id_00917,narrative,corpus,AMD,AMD_2022_10K,20,16,,,,,,47,AMD_2020_10K,0.0588,,,,,
+financebench_id_01279,direct,oracle,AMD,AMD_2022_10K,20,7,,,2022.0,,,,,,,,,,
+financebench_id_01279,direct,corpus,AMD,AMD_2022_10K,20,7,,,2022.0,,,,,,,,,,
+financebench_id_00563,narrative,oracle,AMD,AMD_2022_10K,20,2,5,,,,,48,AMD_2022_10K,0.2899,,,,,
+financebench_id_00563,narrative,corpus,AMD,AMD_2022_10K,20,2,,,,,,51,AMD_2022_annualreport,0.058,,,,,
+financebench_id_00757,direct,oracle,AMD,AMD_2022_10K,20,8,,,16.0,,,,,,,,,,
+financebench_id_00757,direct,corpus,AMD,AMD_2022_10K,20,8,,,16.0,,,,,,,,,,
+financebench_id_00476,narrative,oracle,American Express,AMERICANEXPRESS_2022_10K,20,3,,,,,,,,0.0,,,,,
+financebench_id_00476,narrative,corpus,American Express,AMERICANEXPRESS_2022_10K,20,3,20,,,,,1,APPLE_2019_10K,0.6,,,,,
+financebench_id_01028,narrative,oracle,American Express,AMERICANEXPRESS_2022_10K,20,6,,,,,,,,0.0,,,,,
+financebench_id_01028,narrative,corpus,American Express,AMERICANEXPRESS_2022_10K,20,6,,,,,,,,0.0,,,,,
+financebench_id_00723,narrative,oracle,American Express,AMERICANEXPRESS_2022_10K,20,6,,,,,,45,AMERICANEXPRESS_2022_10K,0.045,,,,,
+financebench_id_00723,narrative,corpus,American Express,AMERICANEXPRESS_2022_10K,20,6,,,,,,45,AMERICANEXPRESS_2022_10K,0.045,,,,,
+financebench_id_00720,narrative,oracle,American Express,AMERICANEXPRESS_2022_10K,20,6,,,,,,45,AMERICANEXPRESS_2022_10K,0.045,,,,,
+financebench_id_00720,narrative,corpus,American Express,AMERICANEXPRESS_2022_10K,20,6,,,,,,,,0.0,,,,,
+financebench_id_01351,direct,oracle,American Express,AMERICANEXPRESS_2022_10K,20,11,1,0.7527,21.6,21.6,AMERICANEXPRESS · TABLE 1: SUMMARY OF FINANCIAL PERFORMANCE · Effective tax rate · 2022 · 21.6 % millions,44,AMERICANEXPRESS_2022_10K,,,,,,
+financebench_id_01351,direct,corpus,American Express,AMERICANEXPRESS_2022_10K,20,11,,,21.6,,,,,,,,,,
+financebench_id_01964,narrative,oracle,American Express,AMERICANEXPRESS_2022_10K,20,2,,,,,,120,AMERICANEXPRESS_2022_10K,0.0274,,,,,
+financebench_id_01964,narrative,corpus,American Express,AMERICANEXPRESS_2022_10K,20,2,,,,,,58,JPMORGAN_2022_10K,0.0213,,,,,
+financebench_id_01981,narrative,oracle,American Express,AMERICANEXPRESS_2022_10K,20,1,,,,,,49,AMERICANEXPRESS_2022_10K,0.0286,,,,,
+financebench_id_01981,narrative,corpus,American Express,AMERICANEXPRESS_2022_10K,20,1,,,,,,49,AMERICANEXPRESS_2022_10K,0.0286,,,,,
+financebench_id_05718,computed,oracle,American Water Works,AMERICANWATERWORKS_2020_10K,20,0,,,,,,,,,94,0.010638297872340425,0.05319148936170213,0.09574468085106383,0.18085106382978725
+financebench_id_05718,computed,corpus,American Water Works,AMERICANWATERWORKS_2020_10K,20,0,,,,,,,,,94,0.0,0.010638297872340425,0.0425531914893617,0.0851063829787234
+financebench_id_04254,computed,oracle,American Water Works,AMERICANWATERWORKS_2021_10K,20,0,,,,,,,,,133,0.007518796992481203,0.022556390977443608,0.03759398496240601,0.09022556390977443
+financebench_id_04254,computed,corpus,American Water Works,AMERICANWATERWORKS_2021_10K,20,0,,,,,,,,,133,0.0,0.015037593984962405,0.022556390977443608,0.045112781954887216
+financebench_id_00070,direct,oracle,American Water Works,AMERICANWATERWORKS_2022_10K,20,7,,,1561.0,,,,,,,,,,
+financebench_id_00070,direct,corpus,American Water Works,AMERICANWATERWORKS_2022_10K,20,7,,,1561.0,,,,,,,,,,
+financebench_id_02608,computed,oracle,Best Buy,BESTBUY_2017_10K,20,0,,,,,,,,,70,0.0,0.02857142857142857,0.05714285714285714,0.11428571428571428
+financebench_id_02608,computed,corpus,Best Buy,BESTBUY_2017_10K,20,0,,,,,,,,,70,0.014285714285714285,0.02857142857142857,0.02857142857142857,0.05714285714285714
+financebench_id_04417,direct,oracle,Best Buy,BESTBUY_2019_10K,20,0,1,0.8292,5409.0,5409.0,"BESTBUY · Consolidated Balance Sheets · Merchandise inventories · February 2, 2019 · 5,409 millions",52,BESTBUY_2019_10K,,,,,,
+financebench_id_04417,direct,corpus,Best Buy,BESTBUY_2019_10K,20,0,1,0.8292,5409.0,5409.0,"BESTBUY · Consolidated Balance Sheets · Merchandise inventories · February 2, 2019 · 5,409 millions",52,BESTBUY_2019_10K,,,,,,
+financebench_id_00685,direct,oracle,Best Buy,BESTBUY_2023_10K,20,15,,,1.1,,,,,,,,,,
+financebench_id_00685,direct,corpus,Best Buy,BESTBUY_2023_10K,20,15,,,1.1,,,,,,,,,,
+financebench_id_01077,direct,oracle,Best Buy,BESTBUY_2023_10K,20,34,5,0.6854,1.0,1.0,BESTBUY · Domestic segment stores open at the end of each of the last three fiscal years were as follows · Best Buy · 2023 · 1,26,BESTBUY_2023_10K,,,,,,
+financebench_id_01077,direct,corpus,Best Buy,BESTBUY_2023_10K,20,34,,,1.0,,,,,,,,,,
+financebench_id_01275,direct,oracle,Best Buy,BESTBUY_2023_10K,20,10,,,1.8,,,,,,,,,,
+financebench_id_01275,direct,corpus,Best Buy,BESTBUY_2023_10K,20,10,,,1.8,,,,,,,,,,
+financebench_id_00288,direct,oracle,Best Buy,BESTBUY_2024Q2_10Q,20,6,18,0.6281,2.0,2.0,BESTBUY · Cash flows were as follows ($ in millions) · Effect of exchange rate changes on cash and cash equivalents · Six Months Ended · (2) millions,21,BESTBUY_2024Q2_10Q,,,,,,
+financebench_id_00288,direct,corpus,Best Buy,BESTBUY_2024Q2_10Q,20,6,3,0.6816,2.0,2.0,"GENERALMILLS · The changes in the carrying amount of goodwill for fiscal 2021, 2022, and 2023 are as follows · Divestitures · North America Retail · (2.0) millions",55,GENERALMILLS_2023_annualreport,,,,,,
+financebench_id_00460,direct,oracle,Best Buy,BESTBUY_2024Q2_10Q,20,9,,,1.32,,,,,,,,,,
+financebench_id_00460,direct,corpus,Best Buy,BESTBUY_2024Q2_10Q,20,9,,,1.32,,,,,,,,,,
+financebench_id_01902,direct,oracle,Best Buy,BESTBUY_2024Q2_10Q,20,12,16,0.6609,2.0,9.0,BESTBUY · Selected financial data for the Domestic segment was as follows ($ in millions) · Entertainment · Comparable Sales Three Months Ended · 9.0 % millions,17,BESTBUY_2024Q2_10Q,,,,,,
+financebench_id_01902,direct,corpus,Best Buy,BESTBUY_2024Q2_10Q,20,12,5,0.7299,2.0,2.0,BESTBUY · Domestic segment stores open at the end of each of the last three fiscal years were as follows · Best Buy · 2022 · 2,26,BESTBUY_2023_10K,,,,,,
+financebench_id_04660,computed,oracle,Block,BLOCK_2016_10K,20,0,,,,,,,,,70,0.014285714285714285,0.07142857142857142,0.12857142857142856,0.22857142857142856
+financebench_id_04660,computed,corpus,Block,BLOCK_2016_10K,20,0,,,,,,,,,70,0.0,0.02857142857142857,0.05714285714285714,0.07142857142857142
+financebench_id_03838,computed,oracle,Block,BLOCK_2020_10K,20,0,,,,,,,,,88,0.011363636363636364,0.045454545454545456,0.10227272727272728,0.125
+financebench_id_03838,computed,corpus,Block,BLOCK_2020_10K,20,0,,,,,,,,,88,0.011363636363636364,0.045454545454545456,0.06818181818181818,0.14772727272727273
+financebench_id_07661,computed,oracle,Block,BLOCK_2020_10K,20,0,,,,,,,,,120,0.008333333333333333,0.041666666666666664,0.08333333333333333,0.16666666666666666
+financebench_id_07661,computed,corpus,Block,BLOCK_2020_10K,20,0,,,,,,,,,120,0.008333333333333333,0.025,0.03333333333333333,0.058333333333333334
+financebench_id_10285,direct,oracle,Boeing,BOEING_2018_10K,20,0,7,0.8285,12645.0,12645.0,"BOEING · The Boeing Company and Subsidiaries Consolidated Statements of Financial Position · Property, plant and equipment, net · 2018 · 12,645 millions",52,BOEING_2018_10K,,,,,,
+financebench_id_10285,direct,corpus,Boeing,BOEING_2018_10K,20,0,,,12645.0,,,,,,,,,,
+financebench_id_00517,direct,oracle,Boeing,BOEING_2022_10K,20,34,,,20.0,,,,,,,,,,
+financebench_id_00517,direct,corpus,Boeing,BOEING_2022_10K,20,34,,,20.0,,,,,,,,,,
+financebench_id_01091,direct,oracle,Boeing,BOEING_2022_10K,20,17,,,2018.0,,,,,,,,,,
+financebench_id_01091,direct,corpus,Boeing,BOEING_2022_10K,20,17,,,2018.0,,,,,,,,,,
+financebench_id_00678,direct,oracle,Boeing,BOEING_2022_10K,20,17,2,0.7692,4.8,5.3,BOEING · Reconciliation of Non-GAAP Measures to GAAP Measures · Operating margins · 2022 · (5.3)% millions,49,BOEING_2022_10K,,,,,,
+financebench_id_00678,direct,corpus,Boeing,BOEING_2022_10K,20,17,,,4.8,,,,,,,,,,
+financebench_id_01290,direct,oracle,Boeing,BOEING_2022_10K,20,18,,,40.0,,,,,,,,,,
+financebench_id_01290,direct,corpus,Boeing,BOEING_2022_10K,20,18,,,40.0,,,,,,,,,,
+financebench_id_00464,narrative,oracle,Boeing,BOEING_2022_10K,20,14,,,,,,41,BOEING_2022_10K,0.0455,,,,,
+financebench_id_00464,narrative,corpus,Boeing,BOEING_2022_10K,20,14,,,,,,,,0.0,,,,,
+financebench_id_00494,direct,oracle,Boeing,BOEING_2022_10K,20,10,,,737.0,,,,,,,,,,
+financebench_id_00494,direct,corpus,Boeing,BOEING_2022_10K,20,10,,,737.0,,,,,,,,,,
+financebench_id_00585,direct,oracle,Boeing,BOEING_2022_10K,20,5,,,0.62,,,,,,,,,,
+financebench_id_00585,direct,corpus,Boeing,BOEING_2022_10K,20,5,,,0.62,,,,,,,,,,
+financebench_id_03473,computed,oracle,Coca-Cola,COCACOLA_2017_10K,20,0,,,,,,,,,153,0.006535947712418301,0.0196078431372549,0.0196078431372549,0.058823529411764705
+financebench_id_03473,computed,corpus,Coca-Cola,COCACOLA_2017_10K,20,0,,,,,,,,,153,0.0,0.013071895424836602,0.0196078431372549,0.026143790849673203
+financebench_id_09724,computed,oracle,Coca-Cola,COCACOLA_2021_10K,20,0,,,,,,,,,66,0.0,0.0,0.0,0.0
+financebench_id_09724,computed,corpus,Coca-Cola,COCACOLA_2021_10K,20,0,,,,,,,,,66,0.0,0.0,0.0,0.0
+financebench_id_06272,computed,oracle,Coca-Cola,COCACOLA_2022_10K,20,0,,,,,,,,,157,0.006369426751592357,0.03184713375796178,0.044585987261146494,0.10828025477707007
+financebench_id_06272,computed,corpus,Coca-Cola,COCACOLA_2022_10K,20,0,,,,,,,,,157,0.006369426751592357,0.012738853503184714,0.012738853503184714,0.025477707006369428
+financebench_id_10130,computed,oracle,Corning,CORNING_2020_10K,20,0,,,,,,,,,132,0.0,0.0,0.007575757575757576,0.03787878787878788
+financebench_id_10130,computed,corpus,Corning,CORNING_2020_10K,20,0,,,,,,,,,132,0.0,0.0,0.0,0.0
+financebench_id_02981,computed,oracle,Corning,CORNING_2021_10K,20,0,,,,,,,,,67,0.014925373134328358,0.04477611940298507,0.08955223880597014,0.1044776119402985
+financebench_id_02981,computed,corpus,Corning,CORNING_2021_10K,20,0,,,,,,,,,67,0.0,0.0,0.014925373134328358,0.014925373134328358
+financebench_id_01346,direct,oracle,Corning,CORNING_2022_10K,20,8,,,20.0,,,,,,,,,,
+financebench_id_01346,direct,corpus,Corning,CORNING_2022_10K,20,8,,,20.0,,,,,,,,,,
+financebench_id_00005,direct,oracle,Corning,CORNING_2022_10K,20,26,,,831.0,,,,,,,,,,
+financebench_id_00005,direct,corpus,Corning,CORNING_2022_10K,20,26,,,831.0,,,,,,,,,,
+financebench_id_04209,direct,oracle,Costco,COSTCO_2021_10K,20,0,1,0.831,59268.0,59268.0,"COSTCO · (amounts in millions, except par value and share data) · TOTAL ASSETS · August 29, 2021 · 59,268 millions",38,COSTCO_2021_10K,,,,,,
+financebench_id_04209,direct,corpus,Costco,COSTCO_2021_10K,20,0,17,0.831,59268.0,59268.0,"COSTCO · (amounts in millions, except par value and share data) · TOTAL ASSETS · August 29, 2021 · 59,268 millions",38,COSTCO_2022_10K,,,,,,
+financebench_id_05915,computed,oracle,CVS Health,CVSHEALTH_2018_10K,20,0,,,,,,,,,153,0.006535947712418301,0.0196078431372549,0.0196078431372549,0.0392156862745098
+financebench_id_05915,computed,corpus,CVS Health,CVSHEALTH_2018_10K,20,0,,,,,,,,,153,0.0,0.013071895424836602,0.026143790849673203,0.0457516339869281
+financebench_id_00790,direct,oracle,CVS Health,CVSHEALTH_2022_10K,20,35,,,1.82,,,,,,,,,,
+financebench_id_00790,direct,corpus,CVS Health,CVSHEALTH_2022_10K,20,35,,,1.82,,,,,,,,,,
+financebench_id_01107,direct,oracle,CVS Health,CVSHEALTH_2022_10K,20,78,,,1.0,,,,,,,,,,
+financebench_id_01107,direct,corpus,CVS Health,CVSHEALTH_2022_10K,20,78,,,1.0,,,,,,,,,,
+financebench_id_01244,direct,oracle,CVS Health,CVSHEALTH_2022_10K,20,8,,,0.55,,,,,,,,,,
+financebench_id_01244,direct,corpus,CVS Health,CVSHEALTH_2022_10K,20,8,,,0.55,,,,,,,,,,
+financebench_id_00839,narrative,oracle,Foot Locker,FOOTLOCKER_2022_8K_dated_2022-08-19,20,32,3,,,,,2,FOOTLOCKER_2022_8K_dated_2022-08-19,0.9684,,,,,
+financebench_id_00839,narrative,corpus,Foot Locker,FOOTLOCKER_2022_8K_dated_2022-08-19,20,32,1,,,,,29,FOOTLOCKER_2022_8K_dated_2022-08-19,0.4632,,,,,
+financebench_id_00822,narrative,oracle,Foot Locker,FOOTLOCKER_2022_8K_dated-2022-05-20,13,5,1,,,,,2,FOOTLOCKER_2022_8K_dated-2022-05-20,0.6961,,,,,
+financebench_id_00822,narrative,corpus,Foot Locker,FOOTLOCKER_2022_8K_dated-2022-05-20,20,5,7,,,,,2,FOOTLOCKER_2022_8K_dated-2022-05-20,0.6961,,,,,
+financebench_id_04103,computed,oracle,General Mills,GENERALMILLS_2019_10K,20,0,,,,,,,,,115,0.0,0.0,0.0,0.008695652173913044
+financebench_id_04103,computed,corpus,General Mills,GENERALMILLS_2019_10K,20,0,,,,,,,,,115,0.0,0.0,0.008695652173913044,0.017391304347826087
+financebench_id_03471,computed,oracle,General Mills,GENERALMILLS_2020_10K,20,0,,,,,,,,,64,0.0,0.046875,0.109375,0.203125
+financebench_id_03471,computed,corpus,General Mills,GENERALMILLS_2020_10K,20,0,,,,,,,,,64,0.0,0.03125,0.046875,0.09375
+financebench_id_04854,computed,oracle,General Mills,GENERALMILLS_2020_10K,20,0,,,,,,,,,111,0.009009009009009009,0.018018018018018018,0.02702702702702703,0.06306306306306306
+financebench_id_04854,computed,corpus,General Mills,GENERALMILLS_2020_10K,20,0,,,,,,,,,111,0.0,0.018018018018018018,0.018018018018018018,0.018018018018018018
+financebench_id_10136,computed,oracle,General Mills,GENERALMILLS_2022_10K,20,0,,,,,,,,,154,0.006493506493506494,0.01948051948051948,0.025974025974025976,0.045454545454545456
+financebench_id_10136,computed,corpus,General Mills,GENERALMILLS_2022_10K,20,0,,,,,,,,,154,0.0,0.006493506493506494,0.012987012987012988,0.01948051948051948
+financebench_id_00956,direct,oracle,Johnson & Johnson,JOHNSON_JOHNSON_2022_10K,20,9,,,1.3,,,,,,,,,,
+financebench_id_00956,direct,corpus,Johnson & Johnson,JOHNSON_JOHNSON_2022_10K,20,9,,,1.3,,,,,,,,,,
+financebench_id_00669,direct,oracle,Johnson & Johnson,JOHNSON_JOHNSON_2022_10K,20,37,,,19.0,,,,,,,,,,
+financebench_id_00669,direct,corpus,Johnson & Johnson,JOHNSON_JOHNSON_2022_10K,20,37,,,19.0,,,,,,,,,,
+financebench_id_00711,direct,oracle,Johnson & Johnson,JOHNSON_JOHNSON_2022_10K,20,5,,,2.7,,,,,,,,,,
+financebench_id_00711,direct,corpus,Johnson & Johnson,JOHNSON_JOHNSON_2022_10K,20,5,,,2.7,,,,,,,,,,
+financebench_id_00651,direct,oracle,Johnson & Johnson,JOHNSON_JOHNSON_2022Q4_EARNINGS,20,8,,,3.5,,,,,,,,,,
+financebench_id_00651,direct,corpus,Johnson & Johnson,JOHNSON_JOHNSON_2022Q4_EARNINGS,20,8,,,3.5,,,,,,,,,,
+financebench_id_01484,direct,oracle,Johnson & Johnson,JOHNSON_JOHNSON_2022Q4_EARNINGS,20,5,11,0.6538,0.6,0.6,JOHNSON JOHNSON · REGIONAL SALES RESULTS · International · % Change · (0.6)%,2,JOHNSON_JOHNSON_2022Q4_EARNINGS,,,,,,
+financebench_id_01484,direct,corpus,Johnson & Johnson,JOHNSON_JOHNSON_2022Q4_EARNINGS,20,5,,,0.6,,,,,,,,,,
+financebench_id_01488,direct,oracle,Johnson & Johnson,JOHNSON_JOHNSON_2023_8K_dated-2023-08-30,20,12,,,30.0,,,,,,,,,,
+financebench_id_01488,direct,corpus,Johnson & Johnson,JOHNSON_JOHNSON_2023_8K_dated-2023-08-30,20,12,,,30.0,,,,,,,,,,
+financebench_id_01490,direct,oracle,Johnson & Johnson,JOHNSON_JOHNSON_2023_8K_dated-2023-08-30,20,14,,,20.0,,,,,,,,,,
+financebench_id_01490,direct,corpus,Johnson & Johnson,JOHNSON_JOHNSON_2023_8K_dated-2023-08-30,20,14,,,20.0,,,,,,,,,,
+financebench_id_01491,direct,oracle,Johnson & Johnson,JOHNSON_JOHNSON_2023_8K_dated-2023-08-30,20,9,,,13.2,,,,,,,,,,
+financebench_id_01491,direct,corpus,Johnson & Johnson,JOHNSON_JOHNSON_2023_8K_dated-2023-08-30,20,9,,,13.2,,,,,,,,,,
+financebench_id_01487,direct,oracle,Johnson & Johnson,JOHNSON_JOHNSON_2023Q2_EARNINGS,20,7,6,0.6947,2.0,2022.0,JOHNSON JOHNSON · Segments · 2023 · REPORTED SALES vs. PRIOR PERIOD ($MM) SIX MONTHS · 2022,15,JOHNSON_JOHNSON_2023Q2_EARNINGS,,,,,,
+financebench_id_01487,direct,corpus,Johnson & Johnson,JOHNSON_JOHNSON_2023Q2_EARNINGS,20,7,,,2.0,,,,,,,,,,
+financebench_id_00299,direct,oracle,JPMorgan,JPMORGAN_2021Q1_10Q,20,6,,,473.0,,,,,,,,,,
+financebench_id_00299,direct,corpus,JPMorgan,JPMORGAN_2021Q1_10Q,20,6,,,473.0,,,,,,,,,,
+financebench_id_02119,direct,oracle,JPMorgan,JPMORGAN_2021Q1_10Q,20,5,,,66.56,,,,,,,,,,
+financebench_id_02119,direct,corpus,JPMorgan,JPMORGAN_2021Q1_10Q,20,5,,,66.56,,,,,,,,,,
+financebench_id_00206,narrative,oracle,JPMorgan,JPMORGAN_2022_10K,20,9,,,,,,47,JPMORGAN_2022_10K,0.1518,,,,,
+financebench_id_00206,narrative,corpus,JPMorgan,JPMORGAN_2022_10K,20,9,,,,,,266,JPMORGAN_2022_10K,0.0357,,,,,
+financebench_id_00394,direct,oracle,JPMorgan,JPMORGAN_2022Q2_10Q,20,8,,,3725.0,,,,,,,,,,
+financebench_id_00394,direct,corpus,JPMorgan,JPMORGAN_2022Q2_10Q,20,8,,,3725.0,,,,,,,,,,
+financebench_id_02049,narrative,oracle,JPMorgan,JPMORGAN_2023Q2_10Q,20,2,1,,,,,85,JPMORGAN_2023Q2_10Q,1.0,,,,,
+financebench_id_02049,narrative,corpus,JPMorgan,JPMORGAN_2023Q2_10Q,20,2,1,,,,,85,JPMORGAN_2023Q2_10Q,1.0,,,,,
+financebench_id_10499,computed,oracle,Kraft Heinz,KRAFTHEINZ_2019_10K,20,0,,,,,,,,,131,0.007633587786259542,0.03816793893129771,0.07633587786259542,0.1297709923664122
+financebench_id_10499,computed,corpus,Kraft Heinz,KRAFTHEINZ_2019_10K,20,0,,,,,,,,,131,0.007633587786259542,0.022900763358778626,0.030534351145038167,0.05343511450381679
+financebench_id_04412,computed,oracle,Lockheed Martin,LOCKHEEDMARTIN_2020_10K,20,0,,,,,,,,,122,0.0,0.02459016393442623,0.04918032786885246,0.10655737704918032
+financebench_id_04412,computed,corpus,Lockheed Martin,LOCKHEEDMARTIN_2020_10K,20,0,,,,,,,,,122,0.00819672131147541,0.01639344262295082,0.02459016393442623,0.03278688524590164
+financebench_id_03031,computed,oracle,Lockheed Martin,LOCKHEEDMARTIN_2021_10K,20,0,,,,,,,,,61,0.0,0.01639344262295082,0.08196721311475409,0.14754098360655737
+financebench_id_03031,computed,corpus,Lockheed Martin,LOCKHEEDMARTIN_2021_10K,20,0,,,,,,,,,61,0.0,0.0,0.0,0.04918032786885246
+financebench_id_03718,computed,oracle,Lockheed Martin,LOCKHEEDMARTIN_2022_10K,20,0,,,,,,,,,67,0.0,0.014925373134328358,0.07462686567164178,0.1791044776119403
+financebench_id_03718,computed,corpus,Lockheed Martin,LOCKHEEDMARTIN_2022_10K,20,0,,,,,,,,,67,0.0,0.014925373134328358,0.029850746268656716,0.07462686567164178
+financebench_id_04171,computed,oracle,MGM Resorts,MGMRESORTS_2018_10K,20,0,,,,,,,,,69,0.0,0.043478260869565216,0.043478260869565216,0.07246376811594203
+financebench_id_04171,computed,corpus,MGM Resorts,MGMRESORTS_2018_10K,20,0,,,,,,,,,69,0.0,0.0,0.0,0.043478260869565216
+financebench_id_03849,computed,oracle,MGM Resorts,MGMRESORTS_2020_10K,20,0,,,,,,,,,217,0.004608294930875576,0.02304147465437788,0.041474654377880185,0.08755760368663594
+financebench_id_03849,computed,corpus,MGM Resorts,MGMRESORTS_2020_10K,20,0,,,,,,,,,217,0.0,0.004608294930875576,0.009216589861751152,0.027649769585253458
+financebench_id_01254,direct,oracle,MGM Resorts,MGMRESORTS_2022_10K,20,9,,,0.01,,,,,,,,,,
+financebench_id_01254,direct,corpus,MGM Resorts,MGMRESORTS_2022_10K,20,9,,,0.01,,,,,,,,,,
+financebench_id_00382,direct,oracle,MGM Resorts,MGMRESORTS_2022Q4_EARNINGS,20,8,,,90.0,,,,,,,,,,
+financebench_id_00382,direct,corpus,MGM Resorts,MGMRESORTS_2022Q4_EARNINGS,20,8,,,90.0,,,,,,,,,,
+financebench_id_01911,narrative,oracle,MGM Resorts,MGMRESORTS_2022Q4_EARNINGS,20,6,4,,,,,14,MGMRESORTS_2022Q4_EARNINGS,0.9959,,,,,
+financebench_id_01911,narrative,corpus,MGM Resorts,MGMRESORTS_2022Q4_EARNINGS,20,6,,,,,,38,PFIZER_2021_10K,0.0041,,,,,
+financebench_id_01912,direct,oracle,MGM Resorts,MGMRESORTS_2022Q4_EARNINGS,20,23,,,44.0,,,,,,,,,,
+financebench_id_01912,direct,corpus,MGM Resorts,MGMRESORTS_2022Q4_EARNINGS,20,23,,,44.0,,,,,,,,,,
+financebench_id_00407,computed,oracle,MGM Resorts,MGMRESORTS_2023Q2_10Q,20,11,,,,,,,,,22,0.045454545454545456,0.13636363636363635,0.22727272727272727,0.2727272727272727
+financebench_id_00407,computed,corpus,MGM Resorts,MGMRESORTS_2023Q2_10Q,20,11,,,,,,,,,22,0.0,0.0,0.0,0.0
+financebench_id_04700,direct,oracle,Microsoft,MICROSOFT_2016_10K,20,0,,,32780.0,,,,,,,,,,
+financebench_id_04700,direct,corpus,Microsoft,MICROSOFT_2016_10K,20,0,,,32780.0,,,,,,,,,,
+financebench_id_00552,direct,oracle,Microsoft,MICROSOFT_2023_10K,20,4,,,2.5,,,,,,,,,,
+financebench_id_00552,direct,corpus,Microsoft,MICROSOFT_2023_10K,20,4,,,2.5,,,,,,,,,,
+financebench_id_04458,computed,oracle,Netflix,NETFLIX_2015_10K,20,0,,,,,,,,,152,0.006578947368421052,0.019736842105263157,0.039473684210526314,0.07236842105263158
+financebench_id_04458,computed,corpus,Netflix,NETFLIX_2015_10K,20,0,,,,,,,,,152,0.0,0.0,0.0,0.0
+financebench_id_03282,computed,oracle,Netflix,NETFLIX_2017_10K,20,0,,,,,,,,,53,0.018867924528301886,0.09433962264150944,0.1320754716981132,0.22641509433962265
+financebench_id_03282,computed,corpus,Netflix,NETFLIX_2017_10K,20,0,,,,,,,,,53,0.0,0.0,0.0,0.0
+financebench_id_04302,computed,oracle,Nike,NIKE_2018_10K,20,0,,,,,,,,,47,0.0,0.0,0.0,0.0425531914893617
+financebench_id_04302,computed,corpus,Nike,NIKE_2018_10K,20,0,,,,,,,,,47,0.0,0.0,0.0,0.0
+financebench_id_03531,direct,oracle,Nike,NIKE_2019_10K,20,0,1,0.8447,16525.0,16525.0,"NIKE · CONSOLIDATED BALANCE SHEETS · Total current assets · MAY 31, · 16,525",54,NIKE_2019_10K,,,,,,
+financebench_id_03531,direct,corpus,Nike,NIKE_2019_10K,20,0,2,0.8447,16525.0,16525.0,"NIKE · CONSOLIDATED BALANCE SHEETS · Total current assets · MAY 31, · 16,525",54,NIKE_2019_10K,,,,,,
+financebench_id_04080,computed,oracle,Nike,NIKE_2021_10K,20,0,,,,,,,,,108,0.009259259259259259,0.018518518518518517,0.027777777777777776,0.06481481481481481
+financebench_id_04080,computed,corpus,Nike,NIKE_2021_10K,20,0,,,,,,,,,108,0.0,0.018518518518518517,0.027777777777777776,0.046296296296296294
+financebench_id_01163,direct,oracle,Nike,NIKE_2023_10K,20,12,,,2023.0,,,,,,,,,,
+financebench_id_01163,direct,corpus,Nike,NIKE_2023_10K,20,12,,,2023.0,,,,,,,,,,
+financebench_id_00080,direct,oracle,Paypal,PAYPAL_2022_10K,20,7,,,1.6,,,,,,,,,,
+financebench_id_00080,direct,corpus,Paypal,PAYPAL_2022_10K,20,7,,,1.6,,,,,,,,,,
+financebench_id_04980,computed,oracle,PepsiCo,PEPSICO_2021_10K,20,0,,,,,,,,,83,0.012048192771084338,0.024096385542168676,0.024096385542168676,0.060240963855421686
+financebench_id_04980,computed,corpus,PepsiCo,PEPSICO_2021_10K,20,0,,,,,,,,,83,0.012048192771084338,0.024096385542168676,0.03614457831325301,0.03614457831325301
+financebench_id_01009,computed,oracle,PepsiCo,PEPSICO_2022_10K,20,23,,,,,,,,,12,0.0,0.0,0.0,0.0
+financebench_id_01009,computed,corpus,PepsiCo,PEPSICO_2022_10K,20,23,,,,,,,,,12,0.08333333333333333,0.3333333333333333,0.4166666666666667,0.5
+financebench_id_00735,narrative,oracle,PepsiCo,PEPSICO_2022_10K,20,6,,,,,,68,PEPSICO_2022_10K,0.0423,,,,,
+financebench_id_00735,narrative,corpus,PepsiCo,PEPSICO_2022_10K,20,6,,,,,,546,PEPSICO_2021_10K,0.0423,,,,,
+financebench_id_01328,direct,oracle,PepsiCo,PEPSICO_2022_10K,20,5,7,0.819,411.0,411.0,PEPSICO · A summary of our 2019 Productivity Plan is as follows · 2022 restructuring charges · Total · 411,79,PEPSICO_2022_10K,,,,,,
+financebench_id_01328,direct,corpus,PepsiCo,PEPSICO_2022_10K,20,5,12,0.819,411.0,411.0,PEPSICO · A summary of our 2019 Productivity Plan is as follows · 2022 restructuring charges · Total · 411,79,PEPSICO_2022_10K,,,,,,
+financebench_id_03620,computed,oracle,PepsiCo,PEPSICO_2022_10K,20,0,,,,,,,,,136,0.0,0.007352941176470588,0.007352941176470588,0.014705882352941176
+financebench_id_03620,computed,corpus,PepsiCo,PEPSICO_2022_10K,20,0,,,,,,,,,136,0.0,0.0,0.0,0.022058823529411766
+financebench_id_04481,computed,oracle,PepsiCo,PEPSICO_2022_10K,20,0,,,,,,,,,136,0.007352941176470588,0.014705882352941176,0.014705882352941176,0.014705882352941176
+financebench_id_04481,computed,corpus,PepsiCo,PEPSICO_2022_10K,20,0,,,,,,,,,136,0.0,0.007352941176470588,0.007352941176470588,0.022058823529411766
+financebench_id_01482,narrative,oracle,PepsiCo,PEPSICO_2023_8K_dated-2023-05-05,18,13,1,,,,,3,PEPSICO_2023_8K_dated-2023-05-05,0.8095,,,,,
+financebench_id_01482,narrative,corpus,PepsiCo,PEPSICO_2023_8K_dated-2023-05-05,20,13,1,,,,,3,PEPSICO_2023_8K_dated-2023-05-05,0.8095,,,,,
+financebench_id_00705,computed,oracle,PepsiCo,PEPSICO_2023_8K_dated-2023-05-30,20,1,,,,,,,,,9,0.0,0.0,0.0,0.0
+financebench_id_00705,computed,corpus,PepsiCo,PEPSICO_2023_8K_dated-2023-05-30,20,1,,,,,,,,,9,0.0,0.0,0.0,0.0
+financebench_id_00882,computed,oracle,PepsiCo,PEPSICO_2023_8K_dated-2023-05-30,20,10,,,,,,,,,13,0.0,0.0,0.0,0.0
+financebench_id_00882,computed,corpus,PepsiCo,PEPSICO_2023_8K_dated-2023-05-30,20,10,,,,,,,,,13,0.0,0.0,0.0,0.0
+financebench_id_01474,direct,oracle,PepsiCo,PEPSICO_2023Q1_EARNINGS,20,4,,,2023.0,,,,,,,,,,
+financebench_id_01474,direct,corpus,PepsiCo,PEPSICO_2023Q1_EARNINGS,20,4,,,2023.0,,,,,,,,,,
+financebench_id_01476,computed,oracle,PepsiCo,PEPSICO_2023Q1_EARNINGS,20,13,,,,,,,,,4,0.0,0.0,0.0,0.0
+financebench_id_01476,computed,corpus,PepsiCo,PEPSICO_2023Q1_EARNINGS,20,13,,,,,,,,,4,0.0,0.0,0.0,0.0
+financebench_id_00302,narrative,oracle,Pfizer,PFIZER_2021_10K,20,8,14,,,,,59,PFIZER_2021_10K,0.4333,,,,,
+financebench_id_00302,narrative,corpus,Pfizer,PFIZER_2021_10K,20,8,,,,,,,,0.0,,,,,
+financebench_id_00702,narrative,oracle,Pfizer,PFIZER_2021_10K,20,7,18,,,,,57,PFIZER_2021_10K,0.9273,,,,,
+financebench_id_00702,narrative,corpus,Pfizer,PFIZER_2021_10K,20,7,,,,,,82,PFIZER_2020_10K,0.0485,,,,,
+financebench_id_02416,narrative,oracle,Pfizer,PFIZER_2021_10K,20,4,,,,,,71,PFIZER_2021_10K,0.0233,,,,,
+financebench_id_02416,narrative,corpus,Pfizer,PFIZER_2021_10K,20,4,3,,,,,67,PFIZER_2022_10K,0.7086,,,,,
+financebench_id_00283,computed,oracle,Pfizer,Pfizer_2023Q2_10Q,20,0,,,,,,,,,3,0.0,0.3333333333333333,0.3333333333333333,0.3333333333333333
+financebench_id_00283,computed,corpus,Pfizer,Pfizer_2023Q2_10Q,20,0,,,,,,,,,3,0.0,0.0,0.0,0.0
+financebench_id_00724,narrative,oracle,Pfizer,Pfizer_2023Q2_10Q,20,4,,,,,,8,Pfizer_2023Q2_10Q,0.1707,,,,,
+financebench_id_00724,narrative,corpus,Pfizer,Pfizer_2023Q2_10Q,20,4,,,,,,105,PFIZER_2022_10K,0.0854,,,,,
+financebench_id_02419,narrative,oracle,Pfizer,Pfizer_2023Q2_10Q,20,4,3,,,,,41,Pfizer_2023Q2_10Q,1.0,,,,,
+financebench_id_02419,narrative,corpus,Pfizer,Pfizer_2023Q2_10Q,20,4,14,,,,,32,PFIZER_2021_10K,0.7674,,,,,
+financebench_id_00746,narrative,oracle,Ulta Beauty,ULTABEAUTY_2023_10K,20,3,,,,,,105,ULTABEAUTY_2023_10K,0.1268,,,,,
+financebench_id_00746,narrative,corpus,Ulta Beauty,ULTABEAUTY_2023_10K,20,3,6,,,,,1,FEDEX_2023_10K,0.3099,,,,,
+financebench_id_00521,direct,oracle,Ulta Beauty,ULTABEAUTY_2023_10K,20,8,,,2022.0,,,,,,,,,,
+financebench_id_00521,direct,corpus,Ulta Beauty,ULTABEAUTY_2023_10K,20,8,,,2022.0,,,,,,,,,,
+financebench_id_00601,direct,oracle,Ulta Beauty,ULTABEAUTY_2023Q4_EARNINGS,20,27,,,12.0,,,,,,,,,,
+financebench_id_00601,direct,corpus,Ulta Beauty,ULTABEAUTY_2023Q4_EARNINGS,20,27,2,0.6316,12.0,12.0,"PG E · Reorganization items, net for the year ended December 31, 2021 include the following · Total reorganization items, net · Year Ended December 31, 2021 · $ 12",115,PG_E_2021_10K,,,,,,
+financebench_id_00603,direct,oracle,Ulta Beauty,ULTABEAUTY_2023Q4_EARNINGS,20,27,,,12.0,,,,,,,,,,
+financebench_id_00603,direct,corpus,Ulta Beauty,ULTABEAUTY_2023Q4_EARNINGS,20,27,,,12.0,,,,,,,,,,
+financebench_id_00605,direct,oracle,Ulta Beauty,ULTABEAUTY_2023Q4_EARNINGS,20,17,,,12.0,,,,,,,,,,
+financebench_id_00605,direct,corpus,Ulta Beauty,ULTABEAUTY_2023Q4_EARNINGS,20,17,,,12.0,,,,,,,,,,
+financebench_id_00606,direct,oracle,Ulta Beauty,ULTABEAUTY_2023Q4_EARNINGS,20,23,11,0.7726,12.0,12.0,"ULTABEAUTY · Net Income of $340.8 Million or $6.68 Per Diluted Share · New store openings, net · 13 Weeks Ended · 12",1,ULTABEAUTY_2023Q4_EARNINGS,,,,,,
+financebench_id_00606,direct,corpus,Ulta Beauty,ULTABEAUTY_2023Q4_EARNINGS,20,23,,,12.0,,,,,,,,,,
+financebench_id_00859,direct,oracle,Verizon,VERIZON_2021_10K,20,8,14,0.7552,32502.0,32502.0,"VERIZON · The following table sets forth the notional amounts of our outstanding derivative instruments · Cross currency swaps · 2021 · 32,502 millions",85,VERIZON_2021_10K,,,,,,
+financebench_id_00859,direct,corpus,Verizon,VERIZON_2021_10K,20,8,,,32502.0,,,,,,,,,,
+financebench_id_02024,direct,oracle,Verizon,VERIZON_2021_10K,20,17,5,0.8423,862.0,1097.0,"VERIZON · The benefit payments to retirees are expected to be paid as follows · 2024 · Pension Benefits · 1,097 millions",94,VERIZON_2021_10K,,,,,,
+financebench_id_02024,direct,corpus,Verizon,VERIZON_2021_10K,20,17,,,862.0,,,,,,,,,,
+financebench_id_00216,computed,oracle,Verizon,VERIZON_2022_10K,20,16,,,,,,,,,47,0.0,0.0,0.0,0.0
+financebench_id_00216,computed,corpus,Verizon,VERIZON_2022_10K,20,16,,,,,,,,,47,0.0,0.0,0.0,0.0
+financebench_id_00215,computed,oracle,Verizon,VERIZON_2022_10K,20,22,,,,,,,,,57,0.017543859649122806,0.07017543859649122,0.08771929824561403,0.14035087719298245
+financebench_id_00215,computed,corpus,Verizon,VERIZON_2022_10K,20,22,,,,,,,,,57,0.0,0.0,0.0,0.03508771929824561
+financebench_id_00566,computed,oracle,Verizon,VERIZON_2022_10K,20,4,,,,,,,,,59,0.0,0.06779661016949153,0.1016949152542373,0.22033898305084745
+financebench_id_00566,computed,corpus,Verizon,VERIZON_2022_10K,20,4,,,,,,,,,59,0.0,0.03389830508474576,0.06779661016949153,0.1016949152542373
+financebench_id_06247,computed,oracle,Walmart,WALMART_2018_10K,20,0,,,,,,,,,129,0.0,0.007751937984496124,0.015503875968992248,0.015503875968992248
+financebench_id_06247,computed,corpus,Walmart,WALMART_2018_10K,20,0,,,,,,,,,129,0.0,0.0,0.0,0.0
+financebench_id_04784,computed,oracle,Walmart,WALMART_2019_10K,20,0,,,,,,,,,67,0.0,0.0,0.014925373134328358,0.029850746268656716
+financebench_id_04784,computed,corpus,Walmart,WALMART_2019_10K,20,0,,,,,,,,,67,0.0,0.0,0.0,0.0
+financebench_id_06741,computed,oracle,Walmart,WALMART_2020_10K,20,0,,,,,,,,,158,0.0,0.006329113924050633,0.0189873417721519,0.03164556962025317
+financebench_id_06741,computed,corpus,Walmart,WALMART_2020_10K,20,0,,,,,,,,,158,0.0,0.0,0.0,0.0
