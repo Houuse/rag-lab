@@ -66,14 +66,8 @@ fact, `[C678]` for a chunk — and the answer is required to cite them, which is
 what makes `ask.verify` possible.
 
 Still open: context budget and what gets dropped, ordering, deduplication of
-the same figure appearing on several pages, and the sign convention for
-`(1,577)`.
-
-Original note: chunk IDs must be visible in the context or citations cannot
-be checked. Facts must be rendered as text, and that rendering determines
-whether the sign of `(1,577)` survives. Also: context budget and what gets
-dropped, ordering, deduplication of the same figure appearing on several pages,
-and the refusal instruction. Groundedness is made possible or impossible here.
+the same figure appearing on several pages, and how a fact is rendered as text
+— that rendering is what decides whether the sign of `(1,577)` survives.
 
 ## generate — built, unmeasured
 
@@ -92,25 +86,31 @@ validation before its scores mean anything.
 
 ## evaluate — harness built, baseline recorded
 
-`ingest/eval.py` scores all 150 questions in both conditions and writes
+`ingest/eval.py` scores all 150 questions in three conditions and writes
 `ingest/eval-runs/<timestamp>/{rows.csv,summary.md}`. Under a minute for a full
 run. Implements `docs/eval-plan.md`; the group split is derived from the data
 and asserted against the documented 70/56/24, so a change to number parsing
 fails loudly instead of quietly reshaping every metric.
 
+Three conditions, always reported together. **oracle** restricts to the filing
+FinanceBench names — a ground-truth label, so a diagnostic ceiling and never a
+product number. **routed** restricts to what the router reads out of the
+question text, and is the only shippable row. **corpus** restricts nothing.
+
 Baseline, 2026-08-28, 366 documents:
 
-| group | condition | headline |
-|---|---|---|
-| direct (70) | oracle | R@1 0.086, R@20 0.286, MRR 0.121 |
-| direct (70) | corpus | R@1 0.029, R@20 0.157, MRR 0.063 |
-| computed (56) | oracle | any@20 0.857, mean coverage 0.103 |
-| computed (56) | corpus | any@20 0.661, mean coverage 0.050 |
-| narrative (24) | oracle | hit@20 0.500, median overlap 0.230 |
-| narrative (24) | corpus | hit@20 0.417, median overlap 0.058 |
+| group | metric | corpus | routed | oracle |
+|---|---|---|---|---|
+| direct (70) | R@20 | 0.157 | **0.186** | 0.286 |
+| direct (70) | R@1 | 0.029 | **0.071** | 0.086 |
+| computed (56) | any@20 | 0.661 | **0.875** | 0.857 |
+| computed (56) | mean cov@20 | 0.050 | **0.099** | 0.103 |
+| narrative (24) | hit@20 | 0.417 | **0.458** | 0.500 |
 
-Oracle beats corpus on every metric. That gap is the cost of entity and period
-resolution and is the number the metadata pre-filter has to move.
+corpus to routed is what routing buys; routed to oracle is what remains. On the
+computed group routing has closed the gap entirely and slightly passed the
+ceiling, because company plus year admits sibling filings and an input the
+named document lacks is sometimes in one of them.
 
 Two defects in the metrics, found by running them, reported in every
 `summary.md` rather than left to be rediscovered:
