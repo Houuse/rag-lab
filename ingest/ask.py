@@ -219,40 +219,117 @@ def verify(answer: str, ctx: Context) -> list[str]:
     return problems
 
 
+def expand(question: str, previous: str | None) -> str:
+    """What to search for, when the question alone is not searchable.
+
+    "and 2019?" carries its scope but no topic. Embedded on its own it
+    retrieves whatever happens to sit near the word 2019 — divestitures,
+    marketable securities — and the follow-up silently answers a different
+    question than the one asked.
+
+    So a short follow-up searches with the previous question's words prepended.
+    Only the retrieval query is expanded; the model is still shown, and still
+    answers, exactly what the user typed.
+    """
+    if previous and len(question.split()) <= 6:
+        return f"{previous} {question}"
+    return question
+
+
+def answer_once(question: str, args, carried: tuple[str | None, int | None],
+                previous: str | None = None):
+    """One question through the whole pipeline. Returns the scope it used."""
+    kind, company, year = route(question)
+    query = expand(question, previous)
+
+    # Carry scope across turns so "and 2019?" or "what about net sales?" works.
+    # Only ever fills a gap — anything the question states itself wins, because
+    # a stale company silently answering about the wrong filer is the worst
+    # failure this thing has.
+    prev_company, prev_year = carried
+    inherited = []
+    if company is None and prev_company:
+        company, _ = prev_company, inherited.append(f"company={prev_company}")
+    if year is None and prev_year:
+        year, _ = prev_year, inherited.append(f"fy={prev_year}")
+
+    note = f"  (carried over {', '.join(inherited)})" if inherited else ""
+    print(f"route        {kind}  company={company or '-'}  fy={year or '-'}{note}",
+          file=sys.stderr)
+    if query != question:
+        print(f"searching    {query[:88]!r}", file=sys.stderr)
+
+    ctx = retrieve(query, kind, company, year, args.facts, args.chunks)
+    print(f"retrieved    {len(ctx.facts)} facts, {len(ctx.chunks)} passages"
+          + ("" if ctx.fiscal_year == year else "  (year filter dropped: no match)"),
+          file=sys.stderr)
+
+    prompt = render(question, ctx)
+    if args.show_context:
+        print(prompt)
+        print("\n" + "=" * 70 + "\n")
+    if args.no_generate:
+        if not args.show_context:
+            print(prompt)
+        return company, year
+
+    answer = generate(prompt, args.model, args.host)
+    print(answer)
+
+    for p in verify(answer, ctx):
+        print(f"  !! {p}", file=sys.stderr)
+    return company, year
+
+
+def chat(args) -> None:
+    """Ask follow-ups without repeating yourself. Ctrl-D or /quit to leave."""
+    print(f"model {args.model}  —  every answer is drawn from the filings and")
+    print("citation-checked. /context shows what the model was given, /quit exits.\n")
+    carried: tuple[str | None, int | None] = (None, None)
+    previous: str | None = None
+    while True:
+        try:
+            q = input("? ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return
+        if not q:
+            continue
+        if q in ("/quit", "/exit"):
+            return
+        if q == "/context":
+            args.show_context = not args.show_context
+            print(f"show-context {'on' if args.show_context else 'off'}\n")
+            continue
+        if q == "/reset":
+            carried, previous = (None, None), None
+            print("scope cleared\n")
+            continue
+        try:
+            carried = answer_once(q, args, carried, previous)
+            previous = q
+        except SystemExit as e:  # a dead Ollama should not kill the session
+            print(f"  !! {e}", file=sys.stderr)
+        print()
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("question")
+    ap.add_argument("question", nargs="?")
     ap.add_argument("--model", default=DEFAULT_MODEL)
     ap.add_argument("--host", default=OLLAMA)
     ap.add_argument("--facts", type=int, default=15, help="facts to retrieve")
     ap.add_argument("--chunks", type=int, default=3, help="passages to retrieve")
     ap.add_argument("--show-context", action="store_true")
     ap.add_argument("--no-generate", action="store_true", help="route and retrieve only")
+    ap.add_argument("--chat", action="store_true", help="interactive, follow-ups keep scope")
     args = ap.parse_args()
 
-    kind, company, year = route(args.question)
-    print(f"route        {kind}  company={company or '-'}  fy={year or '-'}", file=sys.stderr)
+    if args.chat or not args.question:
+        chat(args)
+        return
 
-    ctx = retrieve(args.question, kind, company, year, args.facts, args.chunks)
-    print(f"retrieved    {len(ctx.facts)} facts, {len(ctx.chunks)} passages"
-          + ("" if ctx.fiscal_year == year else "  (year filter dropped: no match)"),
-          file=sys.stderr)
-
-    prompt = render(args.question, ctx)
-    if args.show_context or args.no_generate:
-        print(prompt)
-        if args.no_generate:
-            return
-        print("\n" + "=" * 70 + "\n")
-
-    answer = generate(prompt, args.model, args.host)
-    print(answer)
-
-    problems = verify(answer, ctx)
-    if problems:
-        print("\n--- UNGROUNDED", file=sys.stderr)
-        for p in problems:
-            print(f"    {p}", file=sys.stderr)
+    answer_once(args.question, args, (None, None))
 
 
 if __name__ == "__main__":
