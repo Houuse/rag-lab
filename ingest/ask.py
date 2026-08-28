@@ -26,19 +26,48 @@ None of this makes the model honest. It makes dishonesty visible.
 """
 
 import argparse
+import contextlib
+import io
 import json
+import logging
 import re
 import sys
 import urllib.error
 import urllib.request
+import warnings
 from dataclasses import dataclass, field
 
-from search import resolve_scope, search, search_facts
+# Before importing search, which pulls in transformers and sentence-transformers:
+# loading the query embedder prints an HF Hub notice, "All keys matched
+# successfully", and a deprecation warning from nomic's remote code. Harmless,
+# and checked — but dumped into an interactive session they are just noise, and
+# they bury the one line that matters.
+warnings.filterwarnings("ignore", message=".*get_extended_attention_mask.*")
+for _noisy in ("transformers", "transformers.modeling_utils", "huggingface_hub",
+               "sentence_transformers"):
+    logging.getLogger(_noisy).setLevel(logging.ERROR)
+
+from search import embed_query, resolve_scope, search, search_facts  # noqa: E402
+
 
 OLLAMA = "http://localhost:11434"
 DEFAULT_MODEL = "qwen2.5:7b-instruct"
 
 REFUSAL = "INSUFFICIENT EVIDENCE"
+
+
+def warm_up() -> None:
+    """Load the query embedder now, quietly.
+
+    It loads lazily on the first question otherwise, which makes that one
+    question mysteriously slower than the rest. And it prints an HF Hub
+    notice and a "All keys matched successfully" line straight to the
+    console rather than through logging, so the only reliable way to keep
+    them out of an interactive session is to swallow this one call's output.
+    """
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+        embed_query("warm up")
 
 SYSTEM = f"""You answer questions about SEC filings using ONLY the CONTEXT provided.
 
@@ -55,7 +84,12 @@ Rules, in order of importance:
    [F12345] or [C678]. A sentence with a figure and no citation is invalid.
 4. Check the period. A FACT from the wrong year does not answer a question
    about this year — if only the wrong year is present, refuse.
-5. Be brief. State the figure, its units and its page. No preamble.
+5. Answer in one complete sentence naming the company, the period, the figure
+   with its units, and the page. No preamble, no repetition, no bullet list.
+   Cite each figure once.
+
+Example of a good answer:
+  3M's FY2018 capital expenditure was $1,577 million [F13028], page 126.
 """
 
 # Questions that want a figure. Deliberately a rule and not the model: routing
@@ -146,14 +180,20 @@ def render(question: str, ctx: Context) -> str:
     return "\n".join(lines)
 
 
-def generate(prompt: str, model: str, host: str) -> str:
+def generate(prompt: str, model: str, host: str, stream: bool = True) -> str:
+    """Ask the model. Streams by default.
+
+    A minute of silence is indistinguishable from a hang, and the first thing
+    anyone does is press a key — which then lands in the next prompt. Printing
+    tokens as they arrive costs nothing and turns the wait into progress.
+    """
     body = json.dumps({
         "model": model,
         "messages": [
             {"role": "system", "content": SYSTEM},
             {"role": "user", "content": prompt},
         ],
-        "stream": False,
+        "stream": stream,
         # Reasoning models put their chain of thought in `message.thinking` and
         # leave `content` empty until it ends. gemma4:26b spent an entire
         # generation thinking and returned an empty answer, which reached
@@ -171,7 +211,21 @@ def generate(prompt: str, model: str, host: str) -> str:
     )
     try:
         with urllib.request.urlopen(req, timeout=600) as r:
-            payload = json.loads(r.read())
+            if stream:
+                parts, payload = [], {}
+                for line in r:
+                    if not line.strip():
+                        continue
+                    payload = json.loads(line)
+                    piece = payload.get("message", {}).get("content") or ""
+                    if piece:
+                        parts.append(piece)
+                        print(piece, end="", flush=True)
+                if parts:
+                    print()
+                payload = {**payload, "message": {"content": "".join(parts)}}
+            else:
+                payload = json.loads(r.read())
         message = payload.get("message", {})
         answer = (message.get("content") or "").strip()
         if not answer:
@@ -294,8 +348,10 @@ def answer_once(question: str, args, carried: tuple[str | None, int | None],
             print(prompt)
         return company, year
 
-    answer = generate(prompt, args.model, args.host)
-    print(answer)
+    print("thinking      (Ctrl-C to cancel)", flush=True, file=sys.stderr)
+    answer = generate(prompt, args.model, args.host, stream=args.stream)
+    if not args.stream:
+        print(answer)
 
     for p in verify(answer, ctx):
         print(f"  !! {p}", file=sys.stderr)
@@ -304,8 +360,9 @@ def answer_once(question: str, args, carried: tuple[str | None, int | None],
 
 def chat(args) -> None:
     """Ask follow-ups without repeating yourself. Ctrl-D or /quit to leave."""
-    print(f"model {args.model}  —  every answer is drawn from the filings and")
-    print("citation-checked. /context shows what the model was given, /quit exits.\n")
+    print(f"model {args.model}. Answers come from the filings and are")
+    print("citation-checked. Ctrl-C cancels an answer; /quit exits.")
+    print("/context shows what the model was given, /reset clears company and year.\n")
     carried: tuple[str | None, int | None] = (None, None)
     previous: str | None = None
     while True:
@@ -329,6 +386,10 @@ def chat(args) -> None:
         try:
             carried = answer_once(q, args, carried, previous)
             previous = q
+        except KeyboardInterrupt:
+            # Cancel this answer, keep the session. A traceback here is
+            # just noise: nothing has gone wrong.
+            print("\n  (cancelled)", file=sys.stderr)
         except SystemExit as e:  # a dead Ollama should not kill the session
             print(f"  !! {e}", file=sys.stderr)
         print()
@@ -344,7 +405,13 @@ def main() -> None:
     ap.add_argument("--show-context", action="store_true")
     ap.add_argument("--no-generate", action="store_true", help="route and retrieve only")
     ap.add_argument("--chat", action="store_true", help="interactive, follow-ups keep scope")
+    ap.add_argument("--no-stream", dest="stream", action="store_false",
+                    help="wait for the whole answer instead of printing it as it arrives")
     args = ap.parse_args()
+
+    print("loading...", end="", flush=True, file=sys.stderr)
+    warm_up()
+    print(" ready", file=sys.stderr)
 
     if args.chat or not args.question:
         chat(args)

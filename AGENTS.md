@@ -70,6 +70,31 @@ there is no `python` on PATH and the dependencies live only in `ingest/.venv`.
 
 ## Asking it questions
 
+The comfortable way is a real chat UI. `ingest/serve.py` exposes the pipeline as
+an OpenAI-compatible API, so any chat client can front it:
+
+```bash
+cd ingest && .venv/bin/python serve.py          # http://localhost:8642/v1
+
+pip install open-webui
+OPENAI_API_BASE_URL=http://localhost:8642/v1 \
+OPENAI_API_KEY=none ENABLE_OLLAMA_API=False open-webui serve
+```
+
+Then pick the `rag-lab` model. LibreChat, LM Studio and curl work the same way.
+
+Point the UI at **serve.py, not at Ollama**. Ollama cannot reach the database,
+so a UI talking straight to it gets a model answering SEC questions from
+memory. Open WebUI's own RAG is deliberately unused for the same reason: it
+would re-chunk the PDFs naively and discard the fact-per-table-cell store, the
+page-accurate extraction and the citation checks.
+
+Every reply carries a footer saying what was searched, and any grounding
+failure appears in the answer itself rather than in a log nobody reads.
+
+### From the terminal instead
+
+
 Two things must be running: the database (`./db/run.sh`) and a local model
 (`ollama serve` plus `ollama pull qwen2.5:7b-instruct`, which is the default).
 Nothing leaves the machine and there is no per-question cost.
