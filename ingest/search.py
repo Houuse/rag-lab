@@ -15,8 +15,9 @@ import textwrap
 
 DSN = os.environ.get("RAGLAB_DSN", "postgresql://raglab:raglab@localhost:5433/raglab")
 
-EMBED_MODEL = "nomic-ai/nomic-embed-text-v1.5"
-QUERY_PREFIX = "search_query: "
+# Imported, not restated: querying with a different model than indexing used
+# returns plausible nonsense rather than an error.
+from docling_extract.embedding import EMBED_MAX_TOKENS, EMBED_MODEL, QUERY_PREFIX
 
 _model = None
 
@@ -27,7 +28,7 @@ def embed_query(text: str) -> list[float]:
         from sentence_transformers import SentenceTransformer
 
         _model = SentenceTransformer(EMBED_MODEL, trust_remote_code=True)
-        _model.max_seq_length = 8192
+        _model.max_seq_length = EMBED_MAX_TOKENS
     vec = _model.encode(
         [QUERY_PREFIX + text], normalize_embeddings=True, show_progress_bar=False
     )[0]

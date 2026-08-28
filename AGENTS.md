@@ -16,19 +16,22 @@ the product.
 |---|---|
 | Language | Python 3.12, pinned — torch publishes no CUDA wheels for 3.14 |
 | PDF extraction | Docling (layout model + TableFormer) |
+| Chunking, facts, embedding | `docling-extract`, a separate public repo installed as a package (ADR 0006) |
 | Embeddings | `nomic-ai/nomic-embed-text-v1.5` via sentence-transformers, 768 dimensions |
 | Data | PostgreSQL + pgvector, in Podman against a named volume |
 | DB driver | psycopg 3 |
 | Package manager | uv |
 
-There is no dependency manifest. The environment exists only in `ingest/.venv`
-and cannot be reproduced from the repo.
+There is still no dependency manifest for the lab itself; the environment
+exists only in `ingest/.venv`. What *is* pinned is everything chunking and
+embedding touch, in `docling-extract`'s `pyproject.toml` — those pins are load
+bearing, not hygiene. See the gotcha below.
 
 ## Directory index
 
 | Path | What's there |
 |---|---|
-| `ingest/` | The pipeline. `convert.py` PDF→cached JSON, `probe.py` extraction diagnostics, `load.py` chunks+facts+embeddings into Postgres, `search.py` vector search, `batch.py` many documents |
+| `ingest/` | The pipeline. `convert.py` PDF→cached JSON, `probe.py` extraction diagnostics, `load.py` writes chunks+facts+embeddings into Postgres, `search.py` vector search, `batch.py` many documents. Chunking, fact extraction and embedding themselves live in `docling-extract` (ADR 0006) |
 | `ingest/cache/` | Conversion and embedding output, plus per-batch resume files. Gitignored, over 1 GB |
 | `db/` | `run.sh` starts the pgvector container against a named volume; `schema.sql` is idempotent and applied on every start |
 | `financebench/` | The corpus and the 150 questions. A separate clone of `patronus-ai/financebench`, gitignored |
@@ -55,6 +58,7 @@ there is no `python` on PATH and the dependencies live only in `ingest/.venv`.
 | What | Command |
 |---|---|
 | Start the database | `./db/run.sh` from the repo root. Must be running before `load.py` or `search.py`. `--recreate` destroys the volume |
+| Install/refresh the chunking package | `uv pip install --python .venv/bin/python -e ../docling-extract` (or `git+https://github.com/Houuse/docling-extract`) |
 | Convert one PDF | `.venv/bin/python convert.py 3M_2018_10K` |
 | Check extraction | `.venv/bin/python probe.py <stem> --evidence <financebench_id>` |
 | Load into Postgres | `.venv/bin/python load.py <stem>` |
@@ -71,8 +75,18 @@ they are.
 
 ## Gotchas
 
-- **No dependency manifest.** Recreating the environment means reading the
-  imports. `docling-extract` has pins if you need a reference.
+- **No dependency manifest for the lab.** Recreating `ingest/.venv` means
+  reading the imports. Everything on the chunking and embedding path is pinned
+  in `docling-extract/pyproject.toml`, and those pins matter: the embedding
+  cache is keyed by an md5 of the chunk and fact strings, and chunk boundaries
+  come from `docling_core`'s HybridChunker and the HuggingFace tokenizer. A
+  different version of either produces different text, a different key, a cache
+  that silently misses, and vectors incomparable with the ones already stored.
+- **Embedding can run on another machine.** It is the expensive half and the
+  half a GPU helps with — the 2% GPU figure in `docs/system/batch-runs.md` is
+  about conversion, not the pipeline. On the machine with the hardware:
+  `./setup.sh --embed` in `docling-extract`. Copy the `*.emb.*.npy` files next
+  to the JSON here and `load.py` skips encoding entirely.
 - **`financebench/` must be cloned separately** —
   `git clone https://github.com/patronus-ai/financebench` alongside this repo.
   Nothing in `ingest/` works without it.
