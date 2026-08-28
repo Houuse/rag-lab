@@ -47,6 +47,7 @@ for _noisy in ("transformers", "transformers.modeling_utils", "huggingface_hub",
                "sentence_transformers"):
     logging.getLogger(_noisy).setLevel(logging.ERROR)
 
+import metrics  # noqa: E402
 from search import (  # noqa: E402
     embed_query, expand_terms, hybrid, hybrid_facts, resolve_scope, search,
     search_facts,
@@ -114,6 +115,7 @@ class Context:
 
     facts: list = field(default_factory=list)
     chunks: list = field(default_factory=list)
+    computed: list = field(default_factory=list)
     company: str | None = None
     fiscal_year: int | None = None
     kind: str = "numeric"
@@ -124,7 +126,13 @@ class Context:
 
     @property
     def values(self) -> set[float]:
-        return {abs(float(f[2])) for f in self.facts}
+        # Computed results count as grounded. They are not in any single fact
+        # by definition — that is what makes them computed — but they were
+        # produced in code from facts that are, and the inputs are cited
+        # alongside. Omitting them would have verify() flag every derived
+        # figure as fabricated.
+        derived = {abs(c.value) for c in self.computed}
+        return {abs(float(f[2])) for f in self.facts} | derived
 
     @property
     def pages(self) -> set[float]:
@@ -170,6 +178,14 @@ def retrieve(question: str, kind: str, company, year,
     # Jargon the filings never print gets the filing's own words appended. The
     # model still sees the question as asked; only what we search for changes.
     question = expand_terms(question)
+    # Arithmetic happens here, in code, or not at all (ADR 0001). The model is
+    # handed the result and the inputs it came from; it never divides.
+    metric = metrics.detect(question)
+    if metric and company and year:
+        c = metrics.compute(company, year, metric)
+        if c:
+            ctx.computed.append(c)
+
     ctx.facts = find_facts(question, k=k_facts, company=company, fiscal_year=year)
     ctx.chunks = find_chunks(question, k=k_chunks, company=company, fiscal_year=year)
 
@@ -184,6 +200,14 @@ def retrieve(question: str, kind: str, company, year,
 
 def render(question: str, ctx: Context) -> str:
     lines = ["CONTEXT", ""]
+    if ctx.computed:
+        lines.append("Computed for you — the arithmetic is already done, use these "
+                     "figures as given and do not recalculate:")
+        for c in ctx.computed:
+            lines.append(f"  {c.metric} = {c.formatted}   ({c.note})")
+            for key, fid, label, value, page, doc in c.inputs:
+                lines.append(f"      from [F{fid}] {label} = {value:,.0f}  ({doc} p{page})")
+        lines.append("")
     if ctx.facts:
         lines.append("Figures — each is a value read from a table cell in the filing:")
         for score, ftext, signed, scale, page, doc, fid in ctx.facts:
