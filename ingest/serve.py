@@ -43,7 +43,8 @@ MODEL_ID = "rag-lab"
 def run_pipeline(question: str, args) -> str:
     """One question, all the way through. Returns the text a UI should show."""
     kind, company, year = ask.route(question)
-    ctx = ask.retrieve(question, kind, company, year, args.facts, args.chunks)
+    ctx = ask.retrieve(question, kind, company, year, args.facts, args.chunks,
+                       args.retrieval)
     prompt = ask.render(question, ctx)
     answer = ask.generate(prompt, args.model, args.host, stream=False)
 
@@ -176,8 +177,9 @@ def main() -> None:
     ap.add_argument("--bind", default="127.0.0.1", help="loopback by default")
     ap.add_argument("--model", default=ask.DEFAULT_MODEL)
     ap.add_argument("--host", default=ask.OLLAMA, help="where Ollama is")
-    ap.add_argument("--facts", type=int, default=15)
+    ap.add_argument("--facts", type=int, default=10)
     ap.add_argument("--chunks", type=int, default=3)
+    ap.add_argument("--retrieval", choices=("vector", "hybrid"), default="vector")
     args = ap.parse_args()
 
     print("loading...", end="", flush=True)

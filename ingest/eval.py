@@ -36,6 +36,8 @@ HERE = Path(__file__).resolve().parent
 QUESTIONS = HERE.parent / "financebench" / "data" / "financebench_open_source.jsonl"
 RUNS = HERE / "eval-runs"
 
+# Recall is reported at these depths. --k adds itself, so a deeper run can
+# be compared against the shallow default rather than replacing it.
 KS = (1, 5, 10, 20)
 TRIGRAM_THRESHOLD = 0.25
 
@@ -418,6 +420,9 @@ def main() -> None:
     ap.add_argument("--condition", choices=("oracle", "routed", "corpus"))
     ap.add_argument("--out", type=Path, help="results directory")
     args = ap.parse_args()
+
+    if args.k not in KS:
+        globals()["KS"] = tuple(sorted(set(KS) | {args.k}))
 
     rows = load_questions()
     split = Counter(r["group"] for r in rows)

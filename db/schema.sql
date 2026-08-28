@@ -90,6 +90,10 @@ CREATE INDEX IF NOT EXISTS facts_embedding_hnsw
 
 CREATE INDEX IF NOT EXISTS facts_lookup    ON facts (doc_id, column_label);
 CREATE INDEX IF NOT EXISTS facts_row_trgm  ON facts USING gin (row_label gin_trgm_ops);
+-- Lexical search over fact strings. Functional rather than a generated tsv
+-- column: adding a column rewrites the table, an index does not, which
+-- matters when 387k rows are already loaded and being queried.
+CREATE INDEX IF NOT EXISTS facts_text_gin  ON facts USING gin (to_tsvector('english', fact_text));
 CREATE INDEX IF NOT EXISTS facts_period    ON facts (period_end);
 
 -- Convenience view: a fact with everything needed to cite it.

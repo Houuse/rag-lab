@@ -247,6 +247,170 @@ def search_facts(
         return cur.fetchall()
 
 
+# --------------------------------------------------------------------------
+# lexical, and the fusion of the two
+# --------------------------------------------------------------------------
+
+
+# Words that carry no retrieval signal in a finance question. Postgres strips
+# English stopwords itself, but not these — "company" and "fiscal" appear in
+# nearly every fact string and only add noise to a rank.
+NOISE = {
+    "what", "was", "were", "is", "are", "the", "for", "of", "in", "at", "on",
+    "and", "or", "to", "from", "by", "with", "how", "much", "many", "did",
+    "does", "do", "give", "response", "question", "relying", "details", "shown",
+    "statement", "statements", "company", "fiscal", "year", "amount", "value",
+    "please", "answer", "based", "according", "provided", "usd", "using",
+}
+
+WORD = re.compile(r"[A-Za-z][A-Za-z0-9&']*|\d{4}")
+
+
+def as_tsquery(question: str, limit: int = 12) -> str:
+    """Turn a question into an OR-query of its content words.
+
+    websearch_to_tsquery ANDs everything it is given, so handing it a whole
+    question demands one fact containing "what", "was", "in" *and* "FY2023" —
+    which matches nothing. Two-word probes hide this; the first real question
+    returned zero rows.
+
+    OR-ing the content words and letting ts_rank order the result is what makes
+    lexical search useful here: a fact matching "adjusted" and "EBITDA" ranks
+    above one matching "adjusted" alone, without either being required.
+    """
+    seen, terms = set(), []
+    for w in WORD.findall(question):
+        t = w.lower().strip("'")
+        if len(t) < 3 or t in NOISE or t in seen:
+            continue
+        seen.add(t)
+        terms.append(t)
+        if len(terms) >= limit:
+            break
+    return " OR ".join(terms)
+
+
+def _filters(company, doc_name, fiscal_year, alias="d"):
+    where, params = [], []
+    if company:
+        where.append(f"{alias}.company ILIKE %s")
+        params.append(f"%{company}%")
+    if doc_name:
+        where.append(f"{alias}.doc_name = %s")
+        params.append(doc_name)
+    if fiscal_year:
+        where.append(f"{alias}.fiscal_year = %s")
+        params.append(fiscal_year)
+    return where, params
+
+
+def lexical_facts(query: str, k: int = 5, company=None, doc_name=None, fiscal_year=None):
+    """Full-text search over fact strings.
+
+    What the embedding cannot do: match a term exactly. "Adjusted EBITDA" is a
+    name, not a concept to be approximated, and a vector that puts it near
+    "EBIT" and "Adjusted net income" is being reasonable and useless at once.
+
+    This is not the fix for jargon. The filing says "Purchases of property,
+    plant and equipment" and never once says "capex", so no amount of lexical
+    matching finds it — that needs a synonym step, which does not exist yet.
+    """
+    import psycopg
+
+    where = ["to_tsvector('english', f.fact_text) @@ q"]
+    extra, params = _filters(company, doc_name, fiscal_year)
+    where += extra
+
+    sql = f"""
+        WITH q AS (SELECT websearch_to_tsquery('english', %s) AS q)
+        SELECT ts_rank(to_tsvector('english', f.fact_text), q) AS score,
+               f.fact_text, f.signed, f.scale, f.page, d.doc_name, f.fact_id
+        FROM facts f JOIN documents d USING (doc_id), q
+        WHERE {" AND ".join(where)}
+        ORDER BY score DESC
+        LIMIT %s
+    """
+    with psycopg.connect(DSN) as conn, conn.cursor() as cur:
+        cur.execute(sql, [as_tsquery(query), *params, k])
+        return cur.fetchall()
+
+
+def lexical(query: str, k: int = 5, kind=None, company=None, item=None,
+            doc_name=None, fiscal_year=None):
+    """Full-text search over chunks, using the tsv column the schema maintains."""
+    import psycopg
+
+    where = ["c.tsv @@ q"]
+    params: list[object] = []
+    if kind:
+        where.append("c.kind = %s")
+        params.append(kind)
+    if item:
+        where.append("c.item_section = %s")
+        params.append(item)
+    extra, more = _filters(company, doc_name, fiscal_year)
+    where += extra
+    params += more
+
+    sql = f"""
+        WITH q AS (SELECT websearch_to_tsquery('english', %s) AS q)
+        SELECT c.chunk_id, ts_rank(c.tsv, q) AS score,
+               c.kind, c.page_start, c.item_section,
+               c.heading_trail[array_length(c.heading_trail, 1)] AS context,
+               d.doc_name, c.text
+        FROM chunks c JOIN documents d USING (doc_id), q
+        WHERE {" AND ".join(where)}
+        ORDER BY score DESC
+        LIMIT %s
+    """
+    with psycopg.connect(DSN) as conn, conn.cursor() as cur:
+        cur.execute(sql, [as_tsquery(query), *params, k])
+        return cur.fetchall()
+
+
+RRF_K = 60
+
+
+def _fuse(lists: list[list], key, k: int) -> list:
+    """Reciprocal rank fusion.
+
+    The two scores are not comparable — cosine similarity runs 0.5 to 0.85 and
+    is dense, ts_rank runs near zero and is sparse — so any weighted sum of
+    them is really a weighted sum of their scales. RRF throws the scores away
+    and keeps only the ranks: an item scores 1/(60+rank) in each list it
+    appears in, and the constant flattens the difference between rank 1 and
+    rank 2 so that agreeing on something at rank 3 beats one list insisting on
+    it at rank 1.
+    """
+    scores: dict = {}
+    best: dict = {}
+    for rows in lists:
+        for rank, row in enumerate(rows, 1):
+            rid = key(row)
+            scores[rid] = scores.get(rid, 0.0) + 1.0 / (RRF_K + rank)
+            best.setdefault(rid, row)
+    ranked = sorted(scores, key=lambda rid: -scores[rid])
+    return [best[rid] for rid in ranked[:k]]
+
+
+def hybrid_facts(query: str, k: int = 5, company=None, doc_name=None, fiscal_year=None):
+    """Vector and lexical, fused. Each list is fetched deeper than k so fusion
+    has something to work with — an item ranked 15th by one method and 3rd by
+    the other should surface, and cannot if both lists stop at k."""
+    depth = max(k * 2, 20)
+    vec = search_facts(query, depth, company, doc_name, fiscal_year)
+    lex = lexical_facts(query, depth, company, doc_name, fiscal_year)
+    return _fuse([vec, lex], key=lambda r: r[6], k=k)
+
+
+def hybrid(query: str, k: int = 5, kind=None, company=None, item=None,
+           doc_name=None, fiscal_year=None):
+    depth = max(k * 2, 20)
+    vec = search(query, depth, kind, company, item, doc_name, fiscal_year)
+    lex = lexical(query, depth, kind, company, item, doc_name, fiscal_year)
+    return _fuse([vec, lex], key=lambda r: r[0], k=k)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("query")

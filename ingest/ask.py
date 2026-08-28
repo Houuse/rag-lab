@@ -47,7 +47,9 @@ for _noisy in ("transformers", "transformers.modeling_utils", "huggingface_hub",
                "sentence_transformers"):
     logging.getLogger(_noisy).setLevel(logging.ERROR)
 
-from search import embed_query, resolve_scope, search, search_facts  # noqa: E402
+from search import (  # noqa: E402
+    embed_query, hybrid, hybrid_facts, resolve_scope, search, search_facts,
+)
 
 
 OLLAMA = "http://localhost:11434"
@@ -138,7 +140,8 @@ def route(question: str) -> tuple[str, str | None, int | None]:
     return kind, company, year
 
 
-def retrieve(question: str, kind: str, company, year, k_facts: int, k_chunks: int) -> Context:
+def retrieve(question: str, kind: str, company, year, k_facts: int, k_chunks: int,
+             mode: str = "vector") -> Context:
     """Facts for figures, chunks for prose — and some of the other either way.
 
     A numeric question still gets prose, because the sentence around a number
@@ -146,14 +149,16 @@ def retrieve(question: str, kind: str, company, year, k_facts: int, k_chunks: in
     "why did cash flow fall" is usually answered with figures in it.
     """
     ctx = Context(company=company, fiscal_year=year, kind=kind)
-    ctx.facts = search_facts(question, k=k_facts, company=company, fiscal_year=year)
-    ctx.chunks = search(question, k=k_chunks, company=company, fiscal_year=year)
+    find_facts = hybrid_facts if mode == "hybrid" else search_facts
+    find_chunks = hybrid if mode == "hybrid" else search
+    ctx.facts = find_facts(question, k=k_facts, company=company, fiscal_year=year)
+    ctx.chunks = find_chunks(question, k=k_chunks, company=company, fiscal_year=year)
 
     # A filter that matches nothing is worse than no filter: the answer becomes
     # unreachable. Fall back rather than confidently return an empty context.
     if not ctx.facts and not ctx.chunks and (company or year):
-        ctx.facts = search_facts(question, k=k_facts, company=company)
-        ctx.chunks = search(question, k=k_chunks, company=company)
+        ctx.facts = find_facts(question, k=k_facts, company=company)
+        ctx.chunks = find_chunks(question, k=k_chunks, company=company)
         ctx.fiscal_year = None
     return ctx
 
@@ -180,7 +185,19 @@ def render(question: str, ctx: Context) -> str:
     return "\n".join(lines)
 
 
-def generate(prompt: str, model: str, host: str, stream: bool = True) -> str:
+NUM_THREAD = 6
+"""CPU threads for generation.
+
+Left to itself Ollama used about two of eight cores here — 4.5 tok/s.
+Measured: 6 threads gives 7.5, 4 gives 6.7, and asking for all 8 gives 4.9,
+slower than 6. The same oversubscription result docs/system/batch-runs.md
+records for conversion: past the point where the cores are full, more
+parallelism costs rather than pays, and something else always wants a core.
+"""
+
+
+def generate(prompt: str, model: str, host: str, stream: bool = True,
+             num_thread: int = NUM_THREAD) -> str:
     """Ask the model. Streams by default.
 
     A minute of silence is indistinguishable from a hang, and the first thing
@@ -204,7 +221,7 @@ def generate(prompt: str, model: str, host: str, stream: bool = True) -> str:
         # Deterministic: an answer that changes between runs cannot be
         # regression-tested, and this is a regression suite before it is a
         # product.
-        "options": {"temperature": 0, "seed": 1},
+        "options": {"temperature": 0, "seed": 1, "num_thread": num_thread},
     }).encode()
     req = urllib.request.Request(
         f"{host}/api/chat", data=body, headers={"Content-Type": "application/json"}
@@ -334,7 +351,8 @@ def answer_once(question: str, args, carried: tuple[str | None, int | None],
     if query != question:
         print(f"searching    {query[:88]!r}", file=sys.stderr)
 
-    ctx = retrieve(query, kind, company, year, args.facts, args.chunks)
+    ctx = retrieve(query, kind, company, year, args.facts, args.chunks,
+                   getattr(args, "retrieval", "vector"))
     print(f"retrieved    {len(ctx.facts)} facts, {len(ctx.chunks)} passages"
           + ("" if ctx.fiscal_year == year else "  (year filter dropped: no match)"),
           file=sys.stderr)
@@ -398,9 +416,14 @@ def chat(args) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("question", nargs="?")
+    ap.add_argument("--retrieval", choices=("vector", "hybrid"), default="vector",
+                    help="hybrid fuses vector and keyword search; not yet the\n                          default because it is not yet measured end to end")
     ap.add_argument("--model", default=DEFAULT_MODEL)
     ap.add_argument("--host", default=OLLAMA)
-    ap.add_argument("--facts", type=int, default=15, help="facts to retrieve")
+    ap.add_argument("--facts", type=int, default=10,
+                help="facts to retrieve. Recall keeps climbing past this, "
+                     "answer quality does not: at 50 the 7B stopped citing, "
+                     "rambled, and picked the wrong figure")
     ap.add_argument("--chunks", type=int, default=3, help="passages to retrieve")
     ap.add_argument("--show-context", action="store_true")
     ap.add_argument("--no-generate", action="store_true", help="route and retrieve only")
