@@ -16,6 +16,18 @@ time with no warning at all. `load.py` raises it explicitly.
 Both failures produce embeddings of text that was cut short, with nothing in
 the output to say so.
 
+## Two corpus PDFs are truncated, and `file` says they are fine
+
+`INTEL_2023_8K_dated-2023-02-10.pdf` and `INTEL_2023_8K_dated-2023-08-16.pdf`
+end mid-xref-table: no `startxref`, no `%%EOF`. `file` reports both as valid
+PDFs with plausible page counts (214 and 5), because it reads only the header.
+PDFium refuses them with "Data format error", which reads like a parser bug
+rather than an incomplete download.
+
+They are the only two of 368 affected and no question references either.
+Screen a corpus with `grep -ac '%%EOF'` rather than `file` before blaming the
+converter.
+
 ## PDF text can contain NUL bytes
 
 The checkbox glyph on a 10-K cover page renders as `\x00` in some PDFs' font

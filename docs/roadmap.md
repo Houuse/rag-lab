@@ -2,12 +2,21 @@
 
     ingest → retrieve → route → augment → generate → evaluate
 
-## ingest — working, 1 of 368 documents
+## ingest — done, 366 of 368 documents
+
+    366 documents    122,396 chunks    387,378 facts
 
 `ingest/convert.py` turns a PDF into a cached DoclingDocument (~5 min per
 160-page filing, batched and resumable). `ingest/probe.py` inspects that cache
 and grades extraction against FinanceBench's transcriptions. `ingest/load.py`
-writes documents, chunks and facts to Postgres in one transaction.
+writes documents, chunks and facts to Postgres in one transaction. Chunking,
+fact extraction and embedding live in `docling-extract` (ADR 0006).
+
+The two missing documents are `INTEL_2023_8K_dated-2023-02-10` and
+`INTEL_2023_8K_dated-2023-08-16`, both truncated in the FinanceBench clone —
+no `%%EOF`, no `startxref`, the file ends mid-xref-table. They are the only
+two of 368 in that state and no question references either, so they are
+distractors and the gap is cosmetic. Re-cloning the corpus would fix it.
 
 Open: `column_label` on facts is not a normalised period, so a lookup cannot
 filter by year without string matching. Scale resolves for about 60% of facts;
