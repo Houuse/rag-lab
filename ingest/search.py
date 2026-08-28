@@ -45,6 +45,90 @@ def known_companies() -> list[tuple[str, str]]:
     return sorted(((_norm(c), c) for c in rows), key=lambda t: -len(t[0]))
 
 
+# How people write company names, against how the corpus stores them. Measured:
+# 22 of 150 questions resolved to no company, and the misses were dominated by
+# abbreviations the filing itself never uses — "JnJ", "AMEX", "JPM" — plus
+# short forms like "MGM", where the stored MGMRESORTS is not a substring of a
+# question that says MGM.
+#
+# Written by hand rather than derived from FinanceBench's `company` field.
+# That field is benchmark metadata; a table of how people abbreviate public
+# companies is general knowledge, and it has to keep working for a filing the
+# benchmark never mentions.
+COMPANY_ALIASES = {
+    "JNJ": "JOHNSON JOHNSON",
+    "JANDJ": "JOHNSON JOHNSON",
+    "JOHNSONANDJOHNSON": "JOHNSON JOHNSON",
+    "AMEX": "AMERICANEXPRESS",
+    "AMERICANEXPRESSCOMPANY": "AMERICANEXPRESS",
+    "JPM": "JPMORGAN",
+    "JPMORGANCHASE": "JPMORGAN",
+    "MGM": "MGMRESORTS",
+    "AMD": "AMD",
+    "PGE": "PG E",
+    "PACIFICGASANDELECTRIC": "PG E",
+    "COKE": "COCACOLA",
+    "THECOCACOLACOMPANY": "COCACOLA",
+    "LOCKHEED": "LOCKHEEDMARTIN",
+    "ULTA": "ULTABEAUTY",
+    "ACTIVISION": "ACTIVISIONBLIZZARD",
+    "KRAFT": "KRAFTHEINZ",
+    "GENERALMILLSINC": "GENERALMILLS",
+    "AMERICANWATER": "AMERICANWATERWORKS",
+    "BOSTONPROPERTIESINC": "BOSTONPROPERTIES",
+}
+
+# Terms a reader uses that the filings never print. This is the gap neither
+# embedding nor keyword search can close: "capex" ranked 62nd because the line
+# item is "Purchases of property, plant and equipment" and the word capex
+# appears nowhere in the document. Expansion happens on the retrieval query
+# only — the model is still shown, and still answers, the question as asked.
+TERM_EXPANSIONS = {
+    "capex": "capital expenditures purchases of property plant and equipment",
+    "cogs": "cost of goods sold cost of sales cost of revenue",
+    "opex": "operating expenses",
+    "ebitda": "EBITDA earnings before interest taxes depreciation and amortization",
+    "ebit": "EBIT operating income",
+    "fcf": "free cash flow cash provided by operating activities",
+    "eps": "earnings per share",
+    "roic": "return on invested capital",
+    "nci": "noncontrolling interest",
+    "ppe": "property plant and equipment",
+    "pp&e": "property plant and equipment",
+    "sg&a": "selling general and administrative expenses",
+    "r&d": "research and development expenses",
+    "d&a": "depreciation and amortization",
+    "top line": "net sales revenue",
+    "bottom line": "net income",
+    "working capital": "total current assets total current liabilities",
+    "quick ratio": "cash and cash equivalents receivables total current liabilities",
+    "current ratio": "total current assets total current liabilities",
+}
+
+# Whole terms only. A substring test looked fine and was not: "ap" is inside
+# "capex", so asking about capital expenditure also pulled in accounts payable.
+_TERM_RE = re.compile(
+    "|".join(rf"(?<![a-z0-9]){re.escape(t)}(?![a-z0-9])"
+             for t in sorted(TERM_EXPANSIONS, key=len, reverse=True)),
+    re.I,
+)
+
+
+def expand_terms(question: str) -> str:
+    """Append the filing's words for any jargon the question uses.
+
+    Appended, never substituted: the original wording still carries signal, and
+    a reader who writes "capex" may also have written something no expansion
+    covers.
+    """
+    hits, seen = [], set()
+    for m in _TERM_RE.findall(question.lower()):
+        if m not in seen:
+            seen.add(m)
+            hits.append(TERM_EXPANSIONS[m])
+    return question + (" " + " ".join(hits) if hits else "")
+
+
 YEAR_RE = re.compile(r"\bFY\s?(\d{4})\b|\b(20\d{2})\b", re.I)
 
 
@@ -67,6 +151,16 @@ def resolve_scope(question: str) -> tuple[str | None, int | None]:
     """
     q = _norm(question)
     company = next((stored for norm, stored in known_companies() if norm and norm in q), None)
+
+    # An abbreviation the filing never uses. Checked only after the real names
+    # fail, and longest first, so "JPMORGAN" in a question is not overridden by
+    # a shorter alias that also happens to appear.
+    if company is None:
+        known = {stored for _, stored in known_companies()}
+        for alias in sorted(COMPANY_ALIASES, key=len, reverse=True):
+            if alias in q and COMPANY_ALIASES[alias] in known:
+                company = COMPANY_ALIASES[alias]
+                break
 
     # "FY2018" beats a bare "2018": a question naming both usually means FY for
     # the period it wants and mentions the other in passing.

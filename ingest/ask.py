@@ -48,7 +48,8 @@ for _noisy in ("transformers", "transformers.modeling_utils", "huggingface_hub",
     logging.getLogger(_noisy).setLevel(logging.ERROR)
 
 from search import (  # noqa: E402
-    embed_query, hybrid, hybrid_facts, resolve_scope, search, search_facts,
+    embed_query, expand_terms, hybrid, hybrid_facts, resolve_scope, search,
+    search_facts,
 )
 
 
@@ -166,6 +167,9 @@ def retrieve(question: str, kind: str, company, year,
     ctx = Context(company=company, fiscal_year=year, kind=kind)
     find_facts = hybrid_facts if mode == "hybrid" else search_facts
     find_chunks = hybrid if mode == "hybrid" else search
+    # Jargon the filings never print gets the filing's own words appended. The
+    # model still sees the question as asked; only what we search for changes.
+    question = expand_terms(question)
     ctx.facts = find_facts(question, k=k_facts, company=company, fiscal_year=year)
     ctx.chunks = find_chunks(question, k=k_chunks, company=company, fiscal_year=year)
 
