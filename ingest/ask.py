@@ -154,6 +154,13 @@ def generate(prompt: str, model: str, host: str) -> str:
             {"role": "user", "content": prompt},
         ],
         "stream": False,
+        # Reasoning models put their chain of thought in `message.thinking` and
+        # leave `content` empty until it ends. gemma4:26b spent an entire
+        # generation thinking and returned an empty answer, which reached
+        # verify() as "no citations" — a real failure reported as a formatting
+        # one. Nothing here needs deliberation: the task is to copy the right
+        # figure out of a supplied list and cite it.
+        "think": False,
         # Deterministic: an answer that changes between runs cannot be
         # regression-tested, and this is a regression suite before it is a
         # product.
@@ -164,7 +171,21 @@ def generate(prompt: str, model: str, host: str) -> str:
     )
     try:
         with urllib.request.urlopen(req, timeout=600) as r:
-            return json.loads(r.read())["message"]["content"].strip()
+            payload = json.loads(r.read())
+        message = payload.get("message", {})
+        answer = (message.get("content") or "").strip()
+        if not answer:
+            # Say which failure this is. An empty answer silently becomes "no
+            # citations" downstream, which sends you looking at the prompt when
+            # the model never spoke at all.
+            thinking = len(message.get("thinking") or "")
+            reason = payload.get("done_reason", "?")
+            sys.exit(
+                f"{model} returned an empty answer (done_reason={reason}, "
+                f"{thinking} chars of hidden reasoning). If this is a reasoning "
+                "model, it may have run out of tokens before it finished thinking."
+            )
+        return answer
     except urllib.error.URLError as e:
         sys.exit(
             f"cannot reach Ollama at {host}: {e}\n"
