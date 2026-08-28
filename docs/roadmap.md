@@ -23,35 +23,72 @@ filter by year without string matching. Scale resolves for about 60% of facts;
 the rest are mostly non-monetary tables. Two of 116 tables have no heading
 trail.
 
-## retrieve — next
+## retrieve — 3 of 5
 
-Five pieces: vector search over chunks, lexical search over `tsv`, hybrid
-fusion of the two, fact lookup by row label, and a metadata pre-filter on
-company and period. The pre-filter is what stops a 2016 filing answering a
-2018 question.
+Vector search over chunks, vector search over facts, and the metadata
+pre-filter are built. Lexical search over `tsv` and hybrid fusion are not.
 
-Build vector search first, then the eval harness, then add the rest so each
-addition is a measured before/after.
+`search.resolve_scope` reads a company and a fiscal year out of the question
+text and turns them into SQL predicates. It parses the question and never
+FinanceBench's `company` or `doc_name` fields — those are labels the benchmark
+supplies and a user does not, so using them at query time would measure a
+system that cannot exist.
 
-## route
+Measured across all 150 questions (the `routed` condition below), against the
+unrestricted baseline: computed `any@20` 0.661 to 0.875, narrative hit@20 0.417
+to 0.458, direct R@20 0.157 to 0.186. On the computed group routing reaches the
+oracle ceiling, and slightly passes it — filtering to company plus year admits
+a few sibling filings, and an input the named document lacks is sometimes in
+one of them.
 
-Decide whether a question is a fact lookup or a narrative search. A numeric
-question sent down the chunk path produces a plausible unverified figure,
-which is the failure ADR 0001 exists to prevent, so this needs its own
-evaluation separate from retrieval quality.
+Still open on this stage: the router resolves both company and year for 49 of
+70 direct questions and 10 of 24 narrative ones, so the rest fall back to a
+broader search. Jargon is untouched — "capex" still fails, because it needs
+lexical matching or query rewriting, not a filter.
 
-## augment
+Caveat worth keeping: this corpus is 366 curated filings where company plus
+year nearly always identifies one document. Against 10,000 filings the same
+predicate is far less selective, so the gain measured here overstates the gain
+in production.
 
-Prompt assembly. Chunk IDs must be visible in the context or citations cannot
+## route — built
+
+`ask.route` classifies a question as numeric or narrative by rule, and resolves
+its scope. Both kinds get facts and chunks: the sentence around a number is
+what makes it checkable, and a narrative answer usually needs figures in it.
+That makes a misroute degrade the answer rather than break it, which is why a
+rule is enough here and a second model call is not.
+
+## augment — built
+
+`ask.render` assembles the context. Every line carries an id — `[F12345]` for a
+fact, `[C678]` for a chunk — and the answer is required to cite them, which is
+what makes `ask.verify` possible.
+
+Still open: context budget and what gets dropped, ordering, deduplication of
+the same figure appearing on several pages, and the sign convention for
+`(1,577)`.
+
+Original note: chunk IDs must be visible in the context or citations cannot
 be checked. Facts must be rendered as text, and that rendering determines
 whether the sign of `(1,577)` survives. Also: context budget and what gets
 dropped, ordering, deduplication of the same figure appearing on several pages,
 and the refusal instruction. Groundedness is made possible or impossible here.
 
-## generate
+## generate — built, unmeasured
 
-Answer with citations, refuse when the context does not support an answer.
-Arithmetic happens in code, not in the model.
+`ask.py` generates against a local model over Ollama, so no filing leaves the
+machine and there is no per-question cost. Temperature 0 and a fixed seed,
+because an answer that changes between runs cannot be regression-tested.
+
+Grounding is checked after generation rather than requested in the prompt.
+`ask.verify` rejects a citation that was never supplied, an answer carrying no
+citations, and any figure appearing in no retrieved fact — that last one
+catches the model computing or recalling, which is the failure ADR 0001 exists
+to prevent. A prompt asking for citations is a hope; this is a check.
+
+Not yet measured. Answer correctness needs a judge, and the judge needs its own
+validation before its scores mean anything.
 
 ## evaluate — harness built, baseline recorded
 

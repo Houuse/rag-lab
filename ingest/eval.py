@@ -30,7 +30,7 @@ from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
-from search import search, search_facts
+from search import resolve_scope, search, search_facts
 
 HERE = Path(__file__).resolve().parent
 QUESTIONS = HERE.parent / "financebench" / "data" / "financebench_open_source.jsonl"
@@ -219,14 +219,30 @@ def score_narrative(row: dict, hits: list) -> dict:
 
 
 def evaluate(row: dict, condition: str, k: int) -> dict:
-    doc = row["oracle_doc"] if condition == "oracle" else None
+    """Score one question under one condition.
+
+    Three conditions, and the middle one is the only shippable system:
+
+    - **oracle**  restricted to the filing FinanceBench names. Uses a ground
+      truth label, so it is a diagnostic ceiling and never a product number.
+    - **routed**  restricted to whatever `resolve_scope` reads out of the
+      question text. Uses nothing a real user would not supply.
+    - **corpus**  unrestricted.
+
+    corpus -> routed is what routing actually buys. routed -> oracle is what
+    remains: the questions whose company or period the router could not read.
+    """
     group = row["group"]
+    doc = row["oracle_doc"] if condition == "oracle" else None
+    company = fy = None
+    if condition == "routed":
+        company, fy = resolve_scope(row["question"])
 
     if group == "narrative":
-        hits = search(row["question"], k=k, doc_name=doc)
+        hits = search(row["question"], k=k, doc_name=doc, company=company, fiscal_year=fy)
         result = score_narrative(row, hits)
     else:
-        hits = search_facts(row["question"], k=k, doc_name=doc)
+        hits = search_facts(row["question"], k=k, doc_name=doc, company=company, fiscal_year=fy)
         result = score_direct(row, hits) if group == "direct" else score_computed(row, hits)
 
     result |= {
@@ -237,6 +253,8 @@ def evaluate(row: dict, condition: str, k: int) -> dict:
         "oracle_doc": row["oracle_doc"],
         "n_retrieved": len(hits),
         "answer_words": row["answer_words"],
+        "routed_company": company,
+        "routed_fy": fy,
     }
     return result
 
@@ -250,9 +268,17 @@ def summarise(results: list[dict]) -> str:
     out = ["# Retrieval evaluation", ""]
     out.append(f"Run {datetime.now(timezone.utc).isoformat(timespec='seconds')}")
     out.append("")
-    out.append("Retrieval only. Two conditions: **oracle** restricts retrieval to the")
-    out.append("filing FinanceBench names, **corpus** restricts nothing. The gap is the")
-    out.append("cost of entity and period resolution.")
+    out.append("Retrieval only. Three conditions:")
+    out.append("")
+    out.append("- **oracle** — restricted to the filing FinanceBench names. Uses a ground")
+    out.append("  truth label, so it is a diagnostic ceiling, never a product number.")
+    out.append("- **routed** — restricted to the company and fiscal year read out of the")
+    out.append("  question text. Uses nothing a real user would not supply. This is the")
+    out.append("  only shippable row.")
+    out.append("- **corpus** — unrestricted.")
+    out.append("")
+    out.append("corpus to routed is what routing buys. routed to oracle is what remains:")
+    out.append("questions whose company or period the router could not read.")
     out.append("")
 
     for group in ("direct", "computed", "narrative"):
@@ -272,7 +298,7 @@ def summarise(results: list[dict]) -> str:
             out.append("| condition | " + " | ".join(f"R@{k}" for k in KS) + " | MRR |")
             out.append("|---" * (2 + len(KS)) + "|")
 
-        for condition in ("oracle", "corpus"):
+        for condition in ("oracle", "routed", "corpus"):
             sub = [r for r in rows if r["condition"] == condition]
             if not sub:
                 continue
@@ -301,8 +327,8 @@ def summarise(results: list[dict]) -> str:
     # by running the harness, not by reading the plan, and both are properties
     # of how eval-plan.md defines the groups rather than of retrieval.
     # ------------------------------------------------------------------
-    direct = [r for r in results if r["group"] == "direct" and r["condition"] == "oracle"]
-    computed = [r for r in results if r["group"] == "computed" and r["condition"] == "oracle"]
+    direct = [r for r in results if r["group"] == "direct" and r["condition"] == "routed"]
+    computed = [r for r in results if r["group"] == "computed" and r["condition"] == "routed"]
     if direct or computed:
         out += ["## Measurement validity", ""]
 
@@ -317,7 +343,7 @@ def summarise(results: list[dict]) -> str:
             "0.9% organically\" is scored by looking for the value 0.9; one answer yields",
             "1.5 from a bond coupon. Value-matching cannot measure those.",
             "",
-            "| direct/oracle | n | found@20 |",
+            "| direct/routed | n | found@20 |",
             "|---|---|---|",
             f"| answer is a sentence (>=4 words) | {len(prose)} | "
             f"{hit(prose)}/{len(prose)} = {hit(prose) / max(1, len(prose)):.3f} |",
@@ -364,6 +390,7 @@ def summarise(results: list[dict]) -> str:
 
 FIELDS = [
     "id", "group", "condition", "company", "oracle_doc", "n_retrieved", "answer_words",
+    "routed_company", "routed_fy",
     "rank", "score", "expected", "found", "matched", "page", "found_doc",
     "best_overlap", "n_inputs", "cov@1", "cov@5", "cov@10", "cov@20",
 ]
@@ -388,7 +415,7 @@ def main() -> None:
     ap.add_argument("-k", type=int, default=max(KS), help="retrieval depth")
     ap.add_argument("--limit", type=int, help="first N questions; 0 = classify only")
     ap.add_argument("--group", choices=("direct", "computed", "narrative"))
-    ap.add_argument("--condition", choices=("oracle", "corpus"))
+    ap.add_argument("--condition", choices=("oracle", "routed", "corpus"))
     ap.add_argument("--out", type=Path, help="results directory")
     args = ap.parse_args()
 
@@ -411,7 +438,7 @@ def main() -> None:
         rows = [r for r in rows if r["group"] == args.group]
     if args.limit:
         rows = rows[: args.limit]
-    conditions = (args.condition,) if args.condition else ("oracle", "corpus")
+    conditions = (args.condition,) if args.condition else ("oracle", "routed", "corpus")
 
     results = []
     total = len(rows) * len(conditions)
