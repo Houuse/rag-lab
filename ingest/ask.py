@@ -5,10 +5,12 @@
     python ask.py "..." --show-context     # what the model was actually given
     python ask.py "..." --model qwen2.5:3b-instruct
 
-Needs a local model served by Ollama:
+Needs a local model server. Default is llama.cpp, which is the only runtime
+here that can see the GPU:
 
-    ollama serve &
-    ollama pull qwen2.5:7b-instruct
+    llama serve -hf Qwen/Qwen2.5-7B-Instruct-GGUF:Q4_K_M -ngl 99 -c 8192
+
+Ollama also works, on the CPU, with --backend ollama --host http://localhost:11434
 
 The quality bar is an exact figure with a page citation, or an explicit
 refusal. A confidently wrong number is worse than no number, because someone
@@ -54,8 +56,18 @@ from search import (  # noqa: E402
 )
 
 
+# llama.cpp over Vulkan, which is the only runtime here that can see the GPU.
+# Ollama's build carries CUDA and CPU backends only, so on this machine's Intel
+# iGPU it runs on the CPU. Measured on a real pipeline prompt — 10 facts and 3
+# passages — 21s against 67s, the same answer. Raw generation is only 1.7x
+# faster (8.7 against 5.0 tok/s); the rest is prompt processing, which is what
+# a GPU is actually for.
+LLAMA_CPP = "http://127.0.0.1:8080"
 OLLAMA = "http://localhost:11434"
-DEFAULT_MODEL = "qwen2.5:7b-instruct"
+DEFAULT_HOST = LLAMA_CPP
+DEFAULT_BACKEND = "openai"
+DEFAULT_MODEL = "Qwen/Qwen2.5-7B-Instruct-GGUF:Q4_K_M"
+OLLAMA_MODEL = "qwen2.5:7b-instruct"
 
 REFUSAL = "INSUFFICIENT EVIDENCE"
 
@@ -239,14 +251,63 @@ parallelism costs rather than pays, and something else always wants a core.
 """
 
 
+def _openai_chat(prompt: str, model: str, host: str, stream: bool) -> str:
+    """Talk to an OpenAI-compatible server — llama.cpp's, mainly.
+
+    Ollama's build carries CUDA and CPU backends only, so on this machine's
+    Intel iGPU it has nothing but the CPU. llama.cpp speaks Vulkan and sees the
+    card. Supporting both is a second request shape, not a second pipeline:
+    retrieval, prompt and verification are unchanged.
+    """
+    body = json.dumps({
+        "model": model,
+        "messages": [
+            {"role": "system", "content": SYSTEM},
+            {"role": "user", "content": prompt},
+        ],
+        "stream": stream,
+        "temperature": 0,
+        "seed": 1,
+    }).encode()
+    req = urllib.request.Request(
+        f"{host}/v1/chat/completions", data=body,
+        headers={"Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=900) as r:
+        if not stream:
+            d = json.loads(r.read())
+            return (d["choices"][0]["message"].get("content") or "").strip()
+        parts = []
+        for raw in r:
+            line = raw.decode().strip()
+            if not line.startswith("data: "):
+                continue
+            if line == "data: [DONE]":
+                break
+            delta = json.loads(line[6:])["choices"][0].get("delta", {})
+            piece = delta.get("content") or ""
+            if piece:
+                parts.append(piece)
+                print(piece, end="", flush=True)
+        if parts:
+            print()
+        return "".join(parts).strip()
+
+
 def generate(prompt: str, model: str, host: str, stream: bool = True,
-             num_thread: int = NUM_THREAD) -> str:
+             num_thread: int = NUM_THREAD, backend: str = "ollama") -> str:
     """Ask the model. Streams by default.
 
     A minute of silence is indistinguishable from a hang, and the first thing
     anyone does is press a key — which then lands in the next prompt. Printing
     tokens as they arrive costs nothing and turns the wait into progress.
     """
+    if backend == "openai":
+        answer = _openai_chat(prompt, model, host, stream)
+        if not answer:
+            sys.exit(f"{model} at {host} returned an empty answer")
+        return answer
+
     body = json.dumps({
         "model": model,
         "messages": [
@@ -410,7 +471,8 @@ def answer_once(question: str, args, carried: tuple[str | None, int | None],
         return company, year
 
     print("thinking      (Ctrl-C to cancel)", flush=True, file=sys.stderr)
-    answer = generate(prompt, args.model, args.host, stream=args.stream)
+    answer = generate(prompt, args.model, args.host, stream=args.stream,
+                      backend=getattr(args, "backend", "ollama"))
     if not args.stream:
         print(answer)
 
@@ -462,7 +524,9 @@ def main() -> None:
     ap.add_argument("--retrieval", choices=("vector", "hybrid"), default="vector",
                     help="hybrid fuses vector and keyword search; not yet the\n                          default because it is not yet measured end to end")
     ap.add_argument("--model", default=DEFAULT_MODEL)
-    ap.add_argument("--host", default=OLLAMA)
+    ap.add_argument("--host", default=DEFAULT_HOST)
+    ap.add_argument("--backend", choices=("ollama", "openai"), default=DEFAULT_BACKEND,
+                    help="openai for llama.cpp, vLLM, or anything speaking /v1")
     ap.add_argument("--facts", type=int, default=None,
                 help="facts to retrieve; default depends on the route (see "
                      "BUDGET). Recall keeps climbing past 10, answer quality "

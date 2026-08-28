@@ -46,7 +46,8 @@ def run_pipeline(question: str, args) -> str:
     ctx = ask.retrieve(question, kind, company, year, args.facts, args.chunks,
                        args.retrieval)
     prompt = ask.render(question, ctx)
-    answer = ask.generate(prompt, args.model, args.host, stream=False)
+    answer = ask.generate(prompt, args.model, args.host, stream=False,
+                          backend=args.backend)
 
     scope = f"{company or 'all companies'} · {year or 'all years'}"
     footer = [
@@ -176,7 +177,8 @@ def main() -> None:
     ap.add_argument("--port", type=int, default=8642)
     ap.add_argument("--bind", default="127.0.0.1", help="loopback by default")
     ap.add_argument("--model", default=ask.DEFAULT_MODEL)
-    ap.add_argument("--host", default=ask.OLLAMA, help="where Ollama is")
+    ap.add_argument("--host", default=ask.DEFAULT_HOST)
+    ap.add_argument("--backend", default=ask.DEFAULT_BACKEND)
     ap.add_argument("--facts", type=int, default=None)
     ap.add_argument("--chunks", type=int, default=None)
     ap.add_argument("--retrieval", choices=("vector", "hybrid"), default="vector")

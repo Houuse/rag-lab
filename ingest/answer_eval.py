@@ -80,7 +80,8 @@ def run(row: dict, args) -> dict:
     ctx = ask.retrieve(question, kind, company, year, args.facts, args.chunks)
     prompt = ask.render(question, ctx)
     try:
-        answer = ask.generate(prompt, args.model, args.host, stream=False)
+        answer = ask.generate(prompt, args.model, args.host, stream=False,
+                          backend=args.backend)
     except BaseException as e:
         if isinstance(e, KeyboardInterrupt):
             raise
@@ -195,7 +196,8 @@ def main() -> None:
     ap.add_argument("--facts", type=int, default=None)
     ap.add_argument("--chunks", type=int, default=None)
     ap.add_argument("--model", default=ask.DEFAULT_MODEL)
-    ap.add_argument("--host", default=ask.OLLAMA)
+    ap.add_argument("--host", default=ask.DEFAULT_HOST)
+    ap.add_argument("--backend", default=ask.DEFAULT_BACKEND)
     ap.add_argument("--out", type=Path)
     args = ap.parse_args()
 

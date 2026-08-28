@@ -55,10 +55,16 @@ Six is 1.7x the default and asking for all eight is *slower* than six — the
 same oversubscription result as the conversion numbers above, for the same
 reason: something else always wants a core. Set in `ask.NUM_THREAD`.
 
-The machine's GPU is Intel integrated. Ollama's build carries CUDA and CPU
-backends only — no Vulkan, no SYCL — so it cannot use it at all, which is why
-generation is on the CPU and why `nvidia-smi` returning nothing was mistaken
-for having no GPU.
+The machine's GPU is Intel integrated, and Ollama's build carries CUDA and CPU
+backends only — no Vulkan, no SYCL — so it cannot use it at all. llama.cpp can:
+it reports `Vulkan0: Intel(R) Graphics (LNL)` with 17.7 GB free and runs the
+same model on it.
+
+Measured on a real pipeline prompt, 10 facts and 3 passages, same answer both
+ways: **21s on the iGPU against 67s on six CPU threads**. Raw generation is only
+1.7x faster (8.7 against 5.0 tok/s) — most of the gain is prompt processing,
+which is the part a GPU is actually for and the part that grows with retrieval
+depth. Generation now defaults to llama.cpp; `--backend ollama` still works.
 
 ## Three independent resume points
 
