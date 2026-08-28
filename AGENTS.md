@@ -64,7 +64,61 @@ there is no `python` on PATH and the dependencies live only in `ingest/.venv`.
 | Load into Postgres | `.venv/bin/python load.py <stem>` |
 | Search | `.venv/bin/python search.py "question"`, or `--facts` for facts |
 | Many documents | `.venv/bin/python batch.py --corpus 150 --workers 4 --threads 2` |
-| Score retrieval | `.venv/bin/python eval.py` — all 150 questions, both conditions, under a minute. `--limit 0` classifies only |
+| Score retrieval | `.venv/bin/python eval.py` — all 150 questions, three conditions, under a minute. `--limit 0` classifies only |
+| Ask a question | `.venv/bin/python ask.py "What was 3M's FY2018 capital expenditure?"` |
+| Ask several | `.venv/bin/python ask.py --chat` |
+
+## Asking it questions
+
+Two things must be running: the database (`./db/run.sh`) and a local model
+(`ollama serve` plus `ollama pull qwen2.5:7b-instruct`, which is the default).
+Nothing leaves the machine and there is no per-question cost.
+
+```bash
+cd ingest
+.venv/bin/python ask.py "What is the FY2018 capital expenditure for 3M?"
+.venv/bin/python ask.py --chat          # follow-ups keep company and year
+```
+
+About 80 seconds per answer on CPU with the 7B. A larger model is slower
+without being better at this: the task is to copy the right figure out of a
+supplied list and cite it, not to reason.
+
+| Flag | |
+|---|---|
+| `--chat` | session mode. `/context` toggles what the model was shown, `/reset` clears carried scope, `/quit` |
+| `--show-context` | print the exact prompt, to see whether a wrong answer was the model's fault or retrieval's |
+| `--no-generate` | route and retrieve only, no model. The fast way to check what would be found |
+| `--facts N` `--chunks N` | how much is retrieved, default 15 and 3 |
+| `--model` | any Ollama model |
+
+### Reading the output
+
+The two `stderr` lines before the answer are the audit trail:
+
+```
+route        numeric  company=3M  fy=2018     <- what it decided to search
+retrieved    8 facts, 1 passages              <- how much it found
+```
+
+`company=-` means the question named no company it recognised, so the search
+was corpus-wide — the commonest reason for a bad answer.
+
+Lines beginning `!!` are grounding failures, and they are the point:
+
+| | |
+|---|---|
+| `cited F123, which was not in the context` | invented a citation |
+| `figure X is in no supplied fact` | computed or recalled a number instead of copying one |
+| `no citations` | answered without evidence |
+
+An answer with no `!!` lines had every figure and citation traced back to a
+filed value. `INSUFFICIENT EVIDENCE` is a success, not a failure — the bar is
+an exact figure with a page, or an explicit refusal.
+
+None of this judges whether the answer is *correct*. It checks the answer
+stayed inside its evidence. Correctness across all 150 questions is not
+measured yet; `eval.py` scores retrieval only.
 
 `RAGLAB_DSN` overrides the connection string. It defaults to
 `postgresql://raglab:raglab@localhost:5433/raglab` — port 5433, not 5432,
