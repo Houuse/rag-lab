@@ -140,14 +140,29 @@ def route(question: str) -> tuple[str, str | None, int | None]:
     return kind, company, year
 
 
-def retrieve(question: str, kind: str, company, year, k_facts: int, k_chunks: int,
-             mode: str = "vector") -> Context:
-    """Facts for figures, chunks for prose — and some of the other either way.
+# How much of each kind of evidence a question gets, by route. Both routes get
+# both kinds: the sentence around a number is what makes it checkable, and "why
+# did cash flow fall" is usually answered with figures in it. What changes is
+# the proportion.
+#
+# Narrative questions were given ten facts and three chunks and refused seven
+# times in ten. "What are the major products AMD sells" is not answerable from
+# ten table cells, and three passages is not much of a filing. Numbers below
+# are a considered guess, not a measurement — the eval run that would settle
+# them has not happened.
+BUDGET = {
+    "numeric":   {"facts": 10, "chunks": 3},
+    "narrative": {"facts": 4, "chunks": 10},
+}
 
-    A numeric question still gets prose, because the sentence around a number
-    is what makes it checkable. A narrative question still gets facts, because
-    "why did cash flow fall" is usually answered with figures in it.
-    """
+
+def retrieve(question: str, kind: str, company, year,
+             k_facts: int | None = None, k_chunks: int | None = None,
+             mode: str = "vector") -> Context:
+    """Retrieve evidence, weighted towards what this kind of question needs."""
+    budget = BUDGET.get(kind, BUDGET["numeric"])
+    k_facts = budget["facts"] if k_facts is None else k_facts
+    k_chunks = budget["chunks"] if k_chunks is None else k_chunks
     ctx = Context(company=company, fiscal_year=year, kind=kind)
     find_facts = hybrid_facts if mode == "hybrid" else search_facts
     find_chunks = hybrid if mode == "hybrid" else search
@@ -420,11 +435,12 @@ def main() -> None:
                     help="hybrid fuses vector and keyword search; not yet the\n                          default because it is not yet measured end to end")
     ap.add_argument("--model", default=DEFAULT_MODEL)
     ap.add_argument("--host", default=OLLAMA)
-    ap.add_argument("--facts", type=int, default=10,
-                help="facts to retrieve. Recall keeps climbing past this, "
-                     "answer quality does not: at 50 the 7B stopped citing, "
-                     "rambled, and picked the wrong figure")
-    ap.add_argument("--chunks", type=int, default=3, help="passages to retrieve")
+    ap.add_argument("--facts", type=int, default=None,
+                help="facts to retrieve; default depends on the route (see "
+                     "BUDGET). Recall keeps climbing past 10, answer quality "
+                     "does not: at 50 the 7B stopped citing and rambled")
+    ap.add_argument("--chunks", type=int, default=None,
+                help="passages to retrieve; default depends on the route")
     ap.add_argument("--show-context", action="store_true")
     ap.add_argument("--no-generate", action="store_true", help="route and retrieve only")
     ap.add_argument("--chat", action="store_true", help="interactive, follow-ups keep scope")

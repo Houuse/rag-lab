@@ -119,7 +119,9 @@ def summarise(results: list[dict], args) -> str:
         "# Answer evaluation",
         "",
         f"Run {datetime.now(timezone.utc).isoformat(timespec='seconds')}",
-        f"model {args.model}, {args.facts} facts and {args.chunks} passages per question",
+        f"model {args.model}, "
+        + (f"{args.facts} facts and {args.chunks} passages" if args.facts
+           else "route-dependent evidence budget (see ask.BUDGET)"),
         "",
         "End to end: route, retrieve, generate, verify — scored against",
         "FinanceBench's answers. `eval.py` measures retrieval; this measures what",
@@ -190,8 +192,8 @@ def main() -> None:
                     help="skip the first N, so a long run can be done in chunks")
     ap.add_argument("--group", choices=("direct", "computed", "narrative"))
     ap.add_argument("--ids", help="comma-separated financebench ids")
-    ap.add_argument("--facts", type=int, default=10)
-    ap.add_argument("--chunks", type=int, default=3)
+    ap.add_argument("--facts", type=int, default=None)
+    ap.add_argument("--chunks", type=int, default=None)
     ap.add_argument("--model", default=ask.DEFAULT_MODEL)
     ap.add_argument("--host", default=ask.OLLAMA)
     ap.add_argument("--out", type=Path)
@@ -214,7 +216,8 @@ def main() -> None:
     if args.limit:
         rows = rows[: args.limit]
 
-    print(f"{len(rows)} questions, {args.model}, {args.facts} facts each")
+    budget = f"{args.facts} facts" if args.facts else "route-dependent budget"
+    print(f"{len(rows)} questions, {args.model}, {budget}")
     print(f"roughly {len(rows) * 80 / 3600:.1f} hours at 80s per question\n", flush=True)
     ask.warm_up()
 

@@ -26,7 +26,8 @@ cost a day.
 
 Ingestion embeds as well as converts, and embedding is the workload a GPU
 suits: a few hundred thousand batched transformer forward passes. Measured on
-the database machine, which has no GPU — four workers, 35 minutes, the first
+the database machine, whose only GPU is an integrated one no backend here can
+use — four workers, 35 minutes, the first
 four filings, nothing committed. The remaining 303 documents average 149 pages
 and 86 tables, against 160 and 116 for the 3M 10-K, so they are typical rather
 than outliers. Extrapolated: about 88 hours.
@@ -37,6 +38,27 @@ and `load.py` finds them cached.
 
 Measure the two models separately. They have nothing in common but a
 dependency on torch.
+
+## Generation uses six threads, not eight, and not the default
+
+Left alone, Ollama ran the 7B on about two of eight cores. Measured on the same
+prompt:
+
+| threads | tok/s |
+|---|---|
+| default | 4.5 |
+| 8 | 4.9 |
+| **6** | **7.5** |
+| 4 | 6.7 |
+
+Six is 1.7x the default and asking for all eight is *slower* than six — the
+same oversubscription result as the conversion numbers above, for the same
+reason: something else always wants a core. Set in `ask.NUM_THREAD`.
+
+The machine's GPU is Intel integrated. Ollama's build carries CUDA and CPU
+backends only — no Vulkan, no SYCL — so it cannot use it at all, which is why
+generation is on the CPU and why `nvidia-smi` returning nothing was mistaken
+for having no GPU.
 
 ## Three independent resume points
 

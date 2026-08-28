@@ -39,3 +39,19 @@ Decisions the ADRs describe are now implemented in a public tool. The reasoning 
 `pyproject.toml` replaces `requirements.txt` as the single pinned list, with `docling` behind a `convert` extra — chunking and embedding work from JSON and do not need it, which is what lets the two halves run on different machines.
 
 Verified before committing: chunk keys, fact keys, counts and sampled strings are byte-identical across 13 documents spanning 10-K, 10-Q, 8-K and earnings, from 7 to 675 chunks. `load.py` reuses `.npy` files written by the pre-move code, and `embed.py` writes files `load.py` then reuses. Byte-identity was the acceptance criterion: a drift would invalidate every cached embedding and put a chunking confound across the 63 documents already loaded.
+
+## Correction, 2026-08-28
+
+"That machine has no GPU" is wrong. It has Intel Lunar Lake integrated
+graphics, with Vulkan available and a render node present. The claim came from
+`nvidia-smi` not being installed, which only rules out NVIDIA.
+
+The decision stands, and so does the measurement behind it: Ollama's build
+ships CUDA and CPU backends only, with no Vulkan or SYCL, so nothing in this
+pipeline could have used that iGPU whatever the premise said. An integrated GPU
+sharing LPDDR5X with the CPU would in any case be bandwidth-bound and worth
+perhaps 2-3x, not the order of magnitude the discrete card gave.
+
+Recorded rather than edited away, because the reasoning is what a later reader
+needs to judge, and a premise checked with the wrong tool is exactly the kind of
+mistake worth leaving visible.

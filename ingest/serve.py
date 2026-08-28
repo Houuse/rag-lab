@@ -177,8 +177,8 @@ def main() -> None:
     ap.add_argument("--bind", default="127.0.0.1", help="loopback by default")
     ap.add_argument("--model", default=ask.DEFAULT_MODEL)
     ap.add_argument("--host", default=ask.OLLAMA, help="where Ollama is")
-    ap.add_argument("--facts", type=int, default=10)
-    ap.add_argument("--chunks", type=int, default=3)
+    ap.add_argument("--facts", type=int, default=None)
+    ap.add_argument("--chunks", type=int, default=None)
     ap.add_argument("--retrieval", choices=("vector", "hybrid"), default="vector")
     args = ap.parse_args()
 
