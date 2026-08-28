@@ -164,7 +164,7 @@ def overlap(evidence: str, chunk: str) -> float:
 def score_direct(row: dict, hits: list) -> dict:
     """Rank of the first retrieved fact whose value matches the answer's."""
     target = numbers(row["answer"])
-    for rank, (score, ftext, signed, scale, page, doc) in enumerate(hits, 1):
+    for rank, (score, ftext, signed, scale, page, doc, fid) in enumerate(hits, 1):
         if any_match(target, abs(float(signed))):
             return {
                 "rank": rank,

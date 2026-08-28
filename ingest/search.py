@@ -12,6 +12,7 @@ result — so the prefix lives here, not in a caller's hands.
 import argparse
 import functools
 import os
+import re
 import textwrap
 
 DSN = os.environ.get("RAGLAB_DSN", "postgresql://raglab:raglab@localhost:5433/raglab")
@@ -21,6 +22,59 @@ DSN = os.environ.get("RAGLAB_DSN", "postgresql://raglab:raglab@localhost:5433/ra
 from docling_extract.embedding import EMBED_MAX_TOKENS, EMBED_MODEL, QUERY_PREFIX
 
 _model = None
+
+
+def _norm(s: str) -> str:
+    """Uppercase alphanumerics only. 'Johnson & Johnson' and 'JOHNSON JOHNSON'
+    are the same company; so are 'Foot Locker' and 'FOOTLOCKER'."""
+    return re.sub(r"[^A-Z0-9]", "", s.upper())
+
+
+@functools.lru_cache(maxsize=1)
+def known_companies() -> list[tuple[str, str]]:
+    """(normalised, stored) for every company in the corpus, longest first.
+
+    Longest first so ACTIVISIONBLIZZARD is tried before AES: a short name that
+    is a substring of a longer one would otherwise capture the wrong filings.
+    """
+    import psycopg
+
+    with psycopg.connect(DSN) as conn, conn.cursor() as cur:
+        cur.execute("SELECT DISTINCT company FROM documents WHERE company IS NOT NULL")
+        rows = [r[0] for r in cur.fetchall()]
+    return sorted(((_norm(c), c) for c in rows), key=lambda t: -len(t[0]))
+
+
+YEAR_RE = re.compile(r"\bFY\s?(\d{4})\b|\b(20\d{2})\b", re.I)
+
+
+def resolve_scope(question: str) -> tuple[str | None, int | None]:
+    """Read a company and a fiscal year out of the question itself.
+
+    The embedding cannot do this. Measured on our own model, adding a year to a
+    query moves the similarity by 0.014 — noise — so a corpus holding 3M's
+    2015 through 2022 filings ranks them interchangeably. The period has to be
+    a predicate, not something hoped for from the vector.
+
+    Deliberately parses the question text and never FinanceBench's `company` or
+    `doc_name` fields. Those are labels the benchmark supplies and a real user
+    does not; using them at query time would be measuring a system that cannot
+    exist. They are for scoring only.
+
+    Returns (company, fiscal_year), either possibly None. None means no filter
+    on that axis — never a guess. Narrowing to the wrong company is worse than
+    not narrowing, because the answer then becomes unreachable at any k.
+    """
+    q = _norm(question)
+    company = next((stored for norm, stored in known_companies() if norm and norm in q), None)
+
+    # "FY2018" beats a bare "2018": a question naming both usually means FY for
+    # the period it wants and mentions the other in passing.
+    years = YEAR_RE.findall(question)
+    fy = next((int(a) for a, b in years if a), None)
+    if fy is None:
+        fy = next((int(b) for a, b in years if b), None)
+    return company, fy
 
 
 def _exact_sql(inner: str, source: str, where: list[str], outer: str) -> str:
@@ -81,6 +135,7 @@ def search(
     company: str | None = None,
     item: str | None = None,
     doc_name: str | None = None,
+    fiscal_year: int | None = None,
 ):
     import psycopg
 
@@ -103,6 +158,9 @@ def search(
         # 3M_2018_10K_something.
         where.append("d.doc_name = %s")
         params.append(doc_name)
+    if fiscal_year:
+        where.append("d.fiscal_year = %s")
+        params.append(fiscal_year)
 
     source = "chunks c JOIN documents d USING (doc_id)"
     if params:  # a metadata filter is in play — see _exact_sql
@@ -142,6 +200,7 @@ def search_facts(
     k: int = 5,
     company: str | None = None,
     doc_name: str | None = None,
+    fiscal_year: int | None = None,
 ):
     """Nearest-neighbour over facts, each its own retrievable unit (ADR 0005)."""
     import psycopg
@@ -158,21 +217,24 @@ def search_facts(
         # 3M_2018_10K_something.
         where.append("d.doc_name = %s")
         params.append(doc_name)
+    if fiscal_year:
+        where.append("d.fiscal_year = %s")
+        params.append(fiscal_year)
 
     source = "facts f JOIN documents d USING (doc_id)"
     if params:  # a metadata filter is in play — see _exact_sql
         sql = _exact_sql(
-            inner="f.fact_text, f.signed, f.scale, f.page, d.doc_name, f.embedding AS emb",
+            inner="f.fact_id, f.fact_text, f.signed, f.scale, f.page, d.doc_name, f.embedding AS emb",
             source=source,
             where=where,
             outer="""1 - (emb <=> %s::vector) AS score,
-                     fact_text, signed, scale, page, doc_name""",
+                     fact_text, signed, scale, page, doc_name, fact_id""",
         )
         params += [vec, vec, k]
     else:
         sql = f"""
             SELECT 1 - (f.embedding <=> %s::vector) AS score,
-                   f.fact_text, f.signed, f.scale, f.page, d.doc_name
+                   f.fact_text, f.signed, f.scale, f.page, d.doc_name, f.fact_id
             FROM {source}
             WHERE {" AND ".join(where)}
             ORDER BY f.embedding <=> %s::vector
@@ -198,7 +260,7 @@ def main() -> None:
     args = ap.parse_args()
 
     if args.facts:
-        for score, ftext, signed, scale, page, doc in search_facts(
+        for score, ftext, signed, scale, page, doc, fid in search_facts(
             args.query, args.k, args.company, args.doc
         ):
             print(f"{score:.3f}  p{page:<4} {signed:>14,}  {scale or '':<9} {ftext}")
