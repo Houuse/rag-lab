@@ -68,10 +68,34 @@ That pulls [`Houusee/rag-lab-artifacts`](https://huggingface.co/datasets/Houusee
 — 732 Docling JSONs, 778 precomputed embedding files, 366 markdown renderings.
 `load.py` skips encoding entirely when the `.npy` files are present.
 
-**Start the database and load it:**
+**Start the database.** `db/run.sh` starts a `pgvector/pgvector:pg17`
+container against a named volume and applies `db/schema.sql`, which is
+idempotent, on every start. It must be running before `load.py`, `search.py`
+or `ask.py`.
 
 ```bash
-../db/run.sh                              # pgvector in Podman, port 5433
+../db/run.sh              # start; creates the volume and schema if new
+../db/run.sh --recreate   # destroys the volume — the only command that loses data
+```
+
+Defaults, all local and not secrets:
+
+```
+postgresql://raglab:raglab@localhost:5433/raglab
+```
+
+| | |
+|---|---|
+| host / port | `localhost:5433` — **not** 5432, which is usually already taken by a host Postgres, and the clash surfaces much later as a hung connection |
+| user / password | `raglab` / `raglab` — override the password with `PGPASSWORD` |
+| database | `raglab` |
+| container / volume | `raglab-pg` / `raglab_pgdata` |
+
+Set `RAGLAB_DSN` to point anywhere else. `PGPORT` changes the published port.
+
+**Load it:**
+
+```bash
 .venv/bin/python load.py 3M_2018_10K      # one filing
 .venv/bin/python batch.py --corpus 150    # or the whole corpus
 ```
