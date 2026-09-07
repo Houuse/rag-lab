@@ -19,3 +19,6 @@ ingest/*.out
 __pycache__/
 *.pyc
 .DS_Store
+
+# Open WebUI's session signing secret, generated on first serve.
+ingest/.webui_secret_key

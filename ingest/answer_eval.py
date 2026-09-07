@@ -77,7 +77,8 @@ def run(row: dict, args) -> dict:
     question = row["question"]
     t0 = time.perf_counter()
     kind, company, year = ask.route(question)
-    ctx = ask.retrieve(question, kind, company, year, args.facts, args.chunks)
+    ctx = ask.retrieve(question, kind, company, year, args.facts, args.chunks,
+                       args.retrieval)
     prompt = ask.render(question, ctx)
     try:
         answer = ask.generate(prompt, args.model, args.host, stream=False,
@@ -122,7 +123,8 @@ def summarise(results: list[dict], args) -> str:
         f"Run {datetime.now(timezone.utc).isoformat(timespec='seconds')}",
         f"model {args.model}, "
         + (f"{args.facts} facts and {args.chunks} passages" if args.facts
-           else "route-dependent evidence budget (see ask.BUDGET)"),
+           else "route-dependent evidence budget (see ask.BUDGET)")
+        + f", {args.retrieval} retrieval",
         "",
         "End to end: route, retrieve, generate, verify — scored against",
         "FinanceBench's answers. `eval.py` measures retrieval; this measures what",
@@ -198,6 +200,9 @@ def main() -> None:
     ap.add_argument("--model", default=ask.DEFAULT_MODEL)
     ap.add_argument("--host", default=ask.DEFAULT_HOST)
     ap.add_argument("--backend", default=ask.DEFAULT_BACKEND)
+    ap.add_argument("--retrieval", choices=("vector", "hybrid"), default="vector",
+                    help="hybrid adds keyword search fused by RRF. Default matches "
+                         "ask.py and serve.py, so a run reflects what a user gets")
     ap.add_argument("--out", type=Path)
     args = ap.parse_args()
 
