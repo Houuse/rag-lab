@@ -170,3 +170,9 @@ equipment".
 
 Python 3.12 · Docling (layout + TableFormer) · `nomic-embed-text-v1.5`, 768
 dimensions · PostgreSQL + pgvector · psycopg 3 · llama.cpp or Ollama
+
+## License
+
+MIT — see `LICENSE`. The filings themselves are SEC documents; the questions
+and PDFs come from [FinanceBench](https://github.com/patronus-ai/financebench),
+under its own terms.
