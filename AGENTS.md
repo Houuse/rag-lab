@@ -32,7 +32,7 @@ bearing, not hygiene. See the gotcha below.
 | Path | What's there |
 |---|---|
 | `ingest/` | The pipeline. `convert.py` PDF→cached JSON, `probe.py` extraction diagnostics, `load.py` writes chunks+facts+embeddings into Postgres, `search.py` vector search, `batch.py` many documents. Chunking, fact extraction and embedding themselves live in `docling-extract` (ADR 0006) |
-| `ingest/cache/` | Conversion and embedding output, plus per-batch resume files. Gitignored, over 1 GB |
+| `ingest/cache/` | Conversion and embedding output, plus per-batch resume files. Gitignored, 5.2 GB — `./fetch-cache.sh` pulls it rather than reconverting |
 | `db/` | `run.sh` starts the pgvector container against a named volume; `schema.sql` is idempotent and applied on every start |
 | `financebench/` | The corpus and the 150 questions. A separate clone of `patronus-ai/financebench`, gitignored |
 | `AI-Labs/` | Earlier C# scaffolding, unused by the pipeline. Separate repo, gitignored |
@@ -170,6 +170,13 @@ they are.
 - **`financebench/` must be cloned separately** —
   `git clone https://github.com/patronus-ai/financebench` alongside this repo.
   Nothing in `ingest/` works without it.
+- **Don't re-convert the corpus. Fetch it.** `./fetch-cache.sh` from `ingest/`
+  pulls the 5.2 GB of conversion and embedding output — 732 Docling JSONs, 778
+  `.npy` files — from `Houusee/rag-lab-artifacts` on HuggingFace into
+  `ingest/cache/`. Converting 366 PDFs again takes days and is the expensive
+  half of the pipeline. The same pin caution applies: those embeddings are
+  keyed by an md5 of the chunk and fact strings, so they are only valid against
+  the versions pinned in `docling-extract`'s `pyproject.toml`.
 - **`probe.py` must not be renamed to `inspect.py`.** A file named
   `inspect.py` in the script directory shadows the standard library module and
   breaks Docling's imports. The obvious name is the broken one.
