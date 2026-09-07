@@ -61,8 +61,12 @@ uv pip install --python .venv/bin/python git+https://github.com/Houuse/docling-e
 is the expensive half of the pipeline and takes days:
 
 ```bash
-./fetch-cache.sh          # 5.2 GB from Houusee/rag-lab-artifacts on HuggingFace
+./fetch-cache.sh          # 5.2 GB
 ```
+
+That pulls [`Houusee/rag-lab-artifacts`](https://huggingface.co/datasets/Houusee/rag-lab-artifacts)
+— 732 Docling JSONs, 778 precomputed embedding files, 366 markdown renderings.
+`load.py` skips encoding entirely when the `.npy` files are present.
 
 **Start the database and load it:**
 
@@ -145,9 +149,15 @@ git clone https://github.com/patronus-ai/financebench   # alongside this repo
 
 ## Where it stands
 
-FinanceBench's 150 labelled questions are the regression suite, not the
-product. `eval.py` scores retrieval; `answer_eval.py` scores answers end to
-end.
+[FinanceBench](https://github.com/patronus-ai/financebench)'s 150 labelled
+questions are the regression suite, not the product. Each carries a golden
+answer, the evidence strings it should come from, and a written justification
+— which is what makes it possible to tell a retrieval failure from a
+generation failure. Also on HuggingFace as
+[`PatronusAI/financebench`](https://huggingface.co/datasets/PatronusAI/financebench),
+and described in [the paper](https://arxiv.org/abs/2311.11944).
+
+`eval.py` scores retrieval; `answer_eval.py` scores answers end to end.
 
 Retrieval is deliberately incomplete — see `docs/roadmap.md`. Vector search
 over chunks and facts plus a metadata pre-filter are built; hybrid rank fusion
@@ -173,6 +183,8 @@ dimensions · PostgreSQL + pgvector · psycopg 3 · llama.cpp or Ollama
 
 ## License
 
-MIT — see `LICENSE`. The filings themselves are SEC documents; the questions
-and PDFs come from [FinanceBench](https://github.com/patronus-ai/financebench),
-under its own terms.
+MIT — see `LICENSE`, and it covers this code and the derived artifacts only.
+The filings themselves are public SEC documents. The corpus selection, the
+questions and the golden answers come from
+[FinanceBench](https://github.com/patronus-ai/financebench) under its own
+terms, and are not redistributed here.
