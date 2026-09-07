@@ -33,24 +33,25 @@ sequenceDiagram
     P-->>M: numerator, denominator
     M-->>A: Computed(result, inputs) — the model is handed<br/>the answer and its inputs — it never divides
 
-    A->>E: embed_query(question)
-    E-->>A: 768-dim vector
+    Note over A: BUDGET by route decides k before anything is fetched —<br/>numeric 10 facts/3 chunks, narrative 4 facts/10 chunks
 
-    par vector search
-        A->>P: ORDER BY embedding <=> $1 LIMIT depth (HNSW)
-        P-->>A: nearest facts / chunks
-    and lexical search
-        A->>P: ts_rank over tsvector (GIN)
-        P-->>A: keyword matches
-    end
-    A->>A: _fuse() — reciprocal rank fusion, 1/(60+rank)<br/>(scores aren't comparable, only ranks survive)
+    A->>E: embed_query("search_query: " + question)
+    E-->>A: 768-dim vector
+    Note right of E: the whole question is embedded, company<br/>and year included — nothing is parsed out
+
+    A->>P: facts:  ORDER BY embedding <=> $vec LIMIT k_facts
+    P-->>A: k nearest facts — fact_text, signed, scale, page
+    A->>P: chunks: ORDER BY embedding <=> $vec LIMIT k_chunks
+    P-->>A: k nearest passages — text, heading_trail, page_start
+    Note right of P: --retrieval hybrid adds a second, sequential<br/>ts_rank(tsv) query per table, each fetched to<br/>depth = max(2k, 20) and fused by RRF 1/(60+rank).<br/>Off by default until measured end to end.
+
+    Note over A,P: company/fiscal_year are a WHERE on the joined<br/>documents row — they narrow what is eligible,<br/>they never rank. Distance alone selects.
+    Note right of P: with a filter: MATERIALIZED CTE, exact scan.<br/>HNSW filters after finding neighbours, so a<br/>selective filter can return 0 rows and no error.
 
     alt nothing matched under the filters
         A->>P: retry without the fiscal-year filter
         Note right of A: a filter matching nothing is worse than no filter
     end
-
-    Note over A: BUDGET by route — numeric 10 facts/3 chunks,<br/>narrative 4 facts/10 chunks
     A->>A: render() — question + retrieved TEXT into one prompt
 
     A->>L: POST /v1/chat/completions (plain text, temperature 0)

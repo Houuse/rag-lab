@@ -22,3 +22,6 @@ __pycache__/
 
 # Open WebUI's session signing secret, generated on first serve.
 ingest/.webui_secret_key
+
+# JetBrains IDE
+.idea/
