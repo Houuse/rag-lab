@@ -44,7 +44,7 @@ takes.
 | Prerequisite | |
 |---|---|
 | Python 3.12 | pinned — torch publishes no CUDA wheels for 3.14 |
-| Podman | runs the pgvector container |
+| Podman or Docker | runs the pgvector container; `db/run.sh` uses whichever is on PATH |
 | [uv](https://docs.astral.sh/uv/) | optional; `pip install -r` works, `uv` is faster |
 | [llama.cpp](https://llama.app/docs/installation) | the model server, installed below |
 | [Open WebUI](https://docs.openwebui.com/) | optional, only for the chat UI |
