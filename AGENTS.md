@@ -96,8 +96,26 @@ failure appears in the answer itself rather than in a log nobody reads.
 
 
 Two things must be running: the database (`./db/run.sh`) and a local model
-(`ollama serve` plus `ollama pull qwen2.5:7b-instruct`, which is the default).
-Nothing leaves the machine and there is no per-question cost.
+server. Nothing leaves the machine and there is no per-question cost.
+
+**llama.cpp is the default, because it supports more GPUs.** Ollama's build
+ships CUDA and CPU backends only; llama.cpp adds Vulkan, Metal and ROCm, so
+AMD and Intel cards get used instead of falling back to the CPU. On a machine
+where Ollama runs on the CPU, that is the difference between a GPU answer and
+a CPU one.
+
+```bash
+llama serve -hf Qwen/Qwen2.5-7B-Instruct-GGUF:Q4_K_M -ngl 99 -c 8192
+```
+
+Ollama remains the fallback, on the CPU, and supporting it is a second request
+shape rather than a second pipeline — retrieval, prompt assembly and
+verification are untouched:
+
+```bash
+ollama serve && ollama pull qwen2.5:7b-instruct
+.venv/bin/python ask.py "..." --backend ollama --host http://localhost:11434
+```
 
 ```bash
 cd ingest
@@ -105,9 +123,9 @@ cd ingest
 .venv/bin/python ask.py --chat          # follow-ups keep company and year
 ```
 
-About 80 seconds per answer on CPU with the 7B. A larger model is slower
-without being better at this: the task is to copy the right figure out of a
-supplied list and cite it, not to reason.
+Roughly a minute per answer on CPU with the 7B, several times faster on a GPU.
+A larger model is slower without being better at this: the task is to copy the
+right figure out of a supplied list and cite it, not to reason.
 
 | Flag | |
 |---|---|
@@ -167,9 +185,12 @@ they are.
   about conversion, not the pipeline. On the machine with the hardware:
   `./setup.sh --embed` in `docling-extract`. Copy the `*.emb.*.npy` files next
   to the JSON here and `load.py` skips encoding entirely.
-- **`financebench/` must be cloned separately** —
+- **`financebench/` must be cloned separately, but only for some of this** —
   `git clone https://github.com/patronus-ai/financebench` alongside this repo.
-  Nothing in `ingest/` works without it.
+  `convert.py` and `batch.py` need the PDFs; `eval.py`, `answer_eval.py` and
+  `probe.py --evidence` need the 150 questions. Nothing else does: with the
+  cache fetched, `load.py` → `ask.py` runs without the corpus present, which
+  is the point of publishing the artifacts.
 - **Don't re-convert the corpus. Fetch it.** `./fetch-cache.sh` from `ingest/`
   pulls the 5.2 GB of conversion and embedding output — 732 Docling JSONs, 778
   `.npy` files — from `Houusee/rag-lab-artifacts` on HuggingFace into
